@@ -5,6 +5,7 @@ import agents.pid_agent
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+import torch
 
 room_air_mass = const.ROOM_LENGTH * const.ROOM_WIDTH * const.ROOM_HEIGHT * const.AIR_DENSITY
 wall_area_sum = 2 * (const.ROOM_LENGTH * const.ROOM_HEIGHT + const.ROOM_WIDTH * const.ROOM_HEIGHT)
@@ -12,12 +13,6 @@ roof_area = (const.ROOM_LENGTH * const.ROOM_WIDTH)
 cool_energy_transfer_watt = const.COOL_BTUS / 3.41
 heat_energy_transfer_watt = const.HEAT_BTUS / 3.41
 
-def sgn(val: float) -> int:
-	if val < 0:
-		return -1
-	if val > 0:
-		return 1
-	return 0
 def clamp(val: float, min: float, max: float) -> float:
 	if val < min:
 		return min
@@ -25,33 +20,33 @@ def clamp(val: float, min: float, max: float) -> float:
 		return max
 	return val
 
-def joule_to_temp_change(joule: float) -> float:
+def joule_to_temp_change(joule: torch.Tensor) -> torch.Tensor:
 	return joule / (room_air_mass * const.AIR_HEAT_CAPACITY)
 
-def calc_transfer_thru_wall(in_temp: float, out_temp: float) -> float:
-	change = (wall_area_sum * (out_temp - in_temp) * const.WALL_THERM_COND / const.WALL_THICK) + (const.WALL_EMISSIVITY * const.STEFAN_BOLTZMANN_CONSTANT * wall_area_sum)
+def calc_transfer_thru_wall(in_temp: torch.Tensor, out_temp: torch.Tensor) -> torch.Tensor:
+	change = wall_area_sum * (out_temp - in_temp) * const.WALL_THERM_COND / const.WALL_THICK
 	return joule_to_temp_change(change * 60)
 
-def calc_transfer_thru_roof(in_temp: float, out_temp: float) -> float:
-	change = (roof_area * (out_temp - in_temp) * const.ROOF_THERM_COND / const.ROOF_THICK) + (const.ROOF_EMISSIVITY * const.STEFAN_BOLTZMANN_CONSTANT * roof_area)
+def calc_transfer_thru_roof(in_temp: torch.Tensor, out_temp: torch.Tensor) -> torch.Tensor:
+	change = roof_area * (out_temp - in_temp) * const.ROOF_THERM_COND / const.ROOF_THICK
 	return joule_to_temp_change(change * 60)
 
 # -1 <= power <= 1
 # -1 = full cool, 1 = full heat
-def calc_ac_effect(power: float) -> float:	
+def calc_ac_effect(power: torch.Tensor) -> torch.Tensor:	
 	# print(f"{power} ({'HEAT' if power > 0 else ('COOL' if power < 0 else 'OFF')})")
 	change = (cool_energy_transfer_watt if power < 0 else heat_energy_transfer_watt) * power
 	return joule_to_temp_change(change * 60 * random.uniform(const.NOISE_MULT_MIN, const.NOISE_MULT_MAX))
 
-def calc_next_temp(power: float, cur_temp: float, time: int) -> float:
+def calc_next_temp(power: torch.Tensor, cur_temp: torch.Tensor, time: int) -> torch.Tensor:
 	change = calc_transfer_thru_wall(cur_temp, const.OUTSIDE_TEMP[time])
 	change += calc_transfer_thru_roof(cur_temp, const.OUTSIDE_TEMP[time])
-	power = clamp(power, -1, 1)
+	# power = clamp(power, -1, 1)
 
 	if power < 0 and not const.COOL_IS_CONTINUOUS:
-		power = round(power * (const.COOL_SETTINGS_NUM - 1)) / (const.COOL_SETTINGS_NUM - 1)
+		power = torch.round(power * (const.COOL_SETTINGS_NUM - 1)) / (const.COOL_SETTINGS_NUM - 1)
 	if power > 0 and not const.HEAT_IS_CONTINUOUS:
-		power = round(power * (const.HEAT_SETTINGS_NUM - 1)) / (const.HEAT_SETTINGS_NUM - 1)
+		power = torch.round(power * (const.HEAT_SETTINGS_NUM - 1)) / (const.HEAT_SETTINGS_NUM - 1)
 	
 	if power < 0 and power > -const.COOL_MIN_POWER:
 		power = 0
