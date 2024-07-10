@@ -40,9 +40,9 @@ def calc_ac_effect(power: torch.Tensor) -> torch.Tensor:
 	random_tensor = torch.rand(power.size()[0]) * (const.NOISE_MULT_MAX - const.NOISE_MULT_MIN) + const.NOISE_MULT_MIN
 	return joule_to_temp_change(change * random_tensor * 60)
 
-def calc_next_temp(power: torch.Tensor, cur_temp: torch.Tensor, time: int) -> torch.Tensor:
-	change = calc_transfer_thru_wall(cur_temp, const.OUTSIDE_TEMP[time])
-	change += calc_transfer_thru_roof(cur_temp, const.OUTSIDE_TEMP[time])
+def calc_next_temp(power: torch.Tensor, cur_temp: torch.Tensor, time: torch.Tensor) -> torch.Tensor:
+	change = calc_transfer_thru_wall(cur_temp, torch.take(const.OUTSIDE_TEMP, time))
+	change += calc_transfer_thru_roof(cur_temp, torch.take(const.OUTSIDE_TEMP, time))
 	# power = clamp(power, -1, 1)
 
 	# if power < 0 and not const.COOL_IS_CONTINUOUS:

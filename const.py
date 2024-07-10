@@ -1,3 +1,5 @@
+import torch
+
 # meters
 ROOM_LENGTH = 4
 ROOM_WIDTH = 5
@@ -56,3 +58,5 @@ for file in WEATHER_FILES:
 			temp = float(line.split(",")[3])
 			temp = (temp - 32) / 9 * 5
 			OUTSIDE_TEMP.append(temp)
+
+OUTSIDE_TEMP = torch.tensor(OUTSIDE_TEMP, device="cuda:0")

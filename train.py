@@ -151,8 +151,7 @@ for i_episode in range(num_episodes):
 	total_reward = 0
 	# Initialize the environment and get its state
 
-	weather_start = random.randrange(0, len(const.OUTSIDE_TEMP) - 1440)
-	states, info = env.reset(num_setpoints=random.randint(2, 7), start_time=weather_start, concurrent=1024)
+	states, info = env.reset(num_setpoints=random.randint(2, 7), concurrent=1024)
 	
 	# states = torch.tensor(states, dtype=torch.float32, device=device).unsqueeze(0)
 

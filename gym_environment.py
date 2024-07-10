@@ -28,7 +28,7 @@ class Environment(gym.Env):
 		return -torch.abs(self._cur_setpoint - self._cur_temp) # lower = better, higher = worse
 		# return -math.exp(abs(self._target - self._cur_temp) - 1.7)
 	
-	def reset(self, num_setpoints=1, length=1440, start_time=0, concurrent=8):
+	def reset(self, num_setpoints=1, length=1440, concurrent=8):
 		super().reset()
 
 		self._concurrent = concurrent
@@ -42,7 +42,7 @@ class Environment(gym.Env):
 		self._last_toggle = torch.full((self._concurrent,), -1000).to("cuda:0")
 		self._time = 0
 		self._length = length
-		self._start_time = start_time
+		self._start_time = (torch.rand().to("cuda:0") * (len(const.OUTSIDE_TEMP) - length)).long()
 
 		self._all_zeros = torch.zeros(self._concurrent).to("cuda:0")
 
