@@ -13,7 +13,7 @@ roof_area = (const.ROOM_LENGTH * const.ROOM_WIDTH)
 cool_energy_transfer_watt = const.COOL_BTUS / 3.41
 heat_energy_transfer_watt = const.HEAT_BTUS / 3.41
 
-power_transfers = torch.tensor([cool_energy_transfer_watt, heat_energy_transfer_watt])
+power_transfers = torch.tensor([cool_energy_transfer_watt, heat_energy_transfer_watt], device="cuda:0")
 
 def clamp(val: float, min: float, max: float) -> float:
 	if val < min:
@@ -36,7 +36,6 @@ def calc_transfer_thru_roof(in_temp: torch.Tensor, out_temp: torch.Tensor) -> to
 # -1 <= power <= 1
 # -1 = full cool, 1 = full heat
 def calc_ac_effect(power: torch.Tensor) -> torch.Tensor:	
-	# print(f"{power} ({'HEAT' if power > 0 else ('COOL' if power < 0 else 'OFF')})")
 	change = torch.take(power_transfers, (power < 0).long()) * power
 	random_tensor = torch.rand(power.size()[0]) * (const.NOISE_MULT_MAX - const.NOISE_MULT_MIN) + const.NOISE_MULT_MIN
 	return joule_to_temp_change(change * random_tensor * 60)

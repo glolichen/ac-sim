@@ -19,7 +19,7 @@ class Environment(gym.Env):
 		return torch.transpose(torch.stack((
 			self._cur_temp,
 			self._cur_setpoint,
-			torch.full((self._concurrent,), const.OUTSIDE_TEMP[self._time]),
+			torch.full((self._concurrent,), const.OUTSIDE_TEMP[self._time]).to("cuda:0"),
 			self._last_toggle,
 			self._old_power
 		)), 0, 1)
@@ -33,18 +33,18 @@ class Environment(gym.Env):
 
 		self._concurrent = concurrent
 		self._setpoint_list = {}
-		self._cur_setpoint = self._setpoint_list[0] = torch.rand(self._concurrent) * 8 + 20
+		self._cur_setpoint = self._setpoint_list[0] = torch.rand(self._concurrent).to("cuda:0") * 8 + 20
 		for i in range(num_setpoints - 1):
-			self._setpoint_list[random.randrange(1, length)] = torch.rand(self._concurrent) * 8 + 20
+			self._setpoint_list[random.randrange(1, length)] = torch.rand(self._concurrent).to("cuda:0") * 8 + 20
 		
-		self._cur_temp = torch.rand(self._concurrent) * 8 + 20
-		self._old_power = torch.full((self._concurrent,), 0)
-		self._last_toggle = torch.full((self._concurrent,), -1000)
+		self._cur_temp = torch.rand(self._concurrent).to("cuda:0") * 8 + 20
+		self._old_power = torch.full((self._concurrent,), 0).to("cuda:0")
+		self._last_toggle = torch.full((self._concurrent,), -1000).to("cuda:0")
 		self._time = 0
 		self._length = length
 		self._start_time = start_time
 
-		self._all_zeros = torch.zeros(self._concurrent)
+		self._all_zeros = torch.zeros(self._concurrent).to("cuda:0")
 
 		return self._get_observations(), self._get_reward()
 

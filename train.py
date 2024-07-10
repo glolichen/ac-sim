@@ -26,6 +26,7 @@ LR = 1e-4
 
 # device = torch.device("cpu")
 device = torch.device("cuda")
+torch.set_default_device(device)
 
 # from the pytorch page on dqn
 Transition = namedtuple("Transition", ("state", "action", "next_state", "reward"))
@@ -81,13 +82,13 @@ def select_action(states):
 			# second column on max result is index of where max element was
 			# found, so we pick action with the larger expected reward.
 			# print(state[0], policy_net(state[0]).)
-			return torch.cat([policy_net(states[i]).max(0).indices.view(1) for i in range(states.size()[0])])
+			return torch.cat([policy_net(states[i]).max(0).indices.view(1) for i in range(states.size()[0])]).to("cuda:0")
 			# return ret
 			# sys.exit(100)
 			# return torch.cat([policy_net(state[i]).max() for i in range(states.size()[0])])
 	else:
 		# print("other", torch.tensor([env.action_space.sample() for _ in range(states.size()[0])], device=device, dtype=torch.long))
-		return torch.tensor([env.action_space.sample() for _ in range(states.size()[0])], device=device, dtype=torch.long)
+		return torch.tensor([env.action_space.sample() for _ in range(states.size()[0])], device=device, dtype=torch.long).to("cuda:0")
 
 def optimize_model():
 	if len(memory) < BATCH_SIZE:
@@ -151,7 +152,7 @@ for i_episode in range(num_episodes):
 	# Initialize the environment and get its state
 
 	weather_start = random.randrange(0, len(const.OUTSIDE_TEMP) - 1440)
-	states, info = env.reset(num_setpoints=random.randint(2, 7), start_time=weather_start)
+	states, info = env.reset(num_setpoints=random.randint(2, 7), start_time=weather_start, concurrent=1024)
 	
 	# states = torch.tensor(states, dtype=torch.float32, device=device).unsqueeze(0)
 
@@ -167,6 +168,9 @@ for i_episode in range(num_episodes):
 
 		# reward = torch.tensor([reward], device=device)
 		# done = terminated 
+	
+		if t % 10 == 0:
+			print(f"{' ' * 20}\r{t}", end="\r")
 
 		if terminated:
 			print(f"{' ' * term_cols}\repisode {i_episode} sum {sum(rewards)}", end="\r")
