@@ -13,7 +13,7 @@ class Environment(gym.Env):
 	def __init__(self):
 		self.observation_space = gym.spaces.Box(0, 4000, shape=(5,), dtype=float)
 		self.action_space = gym.spaces.Discrete(3)
-		self._actions = torch.tensor([-1, 0, 1], dtype=torch.long)
+		self._actions = torch.tensor([-1, 0, 1], dtype=torch.long, device=torch.device("cuda"))
 
 	def _get_observations(self):
 		return torch.transpose(torch.stack((

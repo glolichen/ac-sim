@@ -24,8 +24,8 @@ EPS_DECAY = 1000
 TAU = 0.005
 LR = 1e-4
 
-device = torch.device("cpu")
-# device = torch.device("cuda")
+# device = torch.device("cpu")
+device = torch.device("cuda")
 
 # from the pytorch page on dqn
 Transition = namedtuple("Transition", ("state", "action", "next_state", "reward"))
