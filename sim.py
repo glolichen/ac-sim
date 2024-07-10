@@ -13,7 +13,7 @@ roof_area = (const.ROOM_LENGTH * const.ROOM_WIDTH)
 cool_energy_transfer_watt = const.COOL_BTUS / 3.41
 heat_energy_transfer_watt = const.HEAT_BTUS / 3.41
 
-power_transfers = torch.tensor([cool_energy_transfer_watt, heat_energy_transfer_watt], device="cuda:0")
+power_transfers = torch.tensor([cool_energy_transfer_watt, heat_energy_transfer_watt], device=const.DEVICE)
 
 def clamp(val: float, min: float, max: float) -> float:
 	if val < min:

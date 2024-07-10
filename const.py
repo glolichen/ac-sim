@@ -59,4 +59,7 @@ for file in WEATHER_FILES:
 			temp = (temp - 32) / 9 * 5
 			OUTSIDE_TEMP.append(temp)
 
-OUTSIDE_TEMP = torch.tensor(OUTSIDE_TEMP, device="cuda:0")
+# DEVICE = torch.device("cuda")
+DEVICE = torch.device("cpu")
+
+OUTSIDE_TEMP = torch.tensor(OUTSIDE_TEMP, device=DEVICE)
