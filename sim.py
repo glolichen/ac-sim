@@ -13,6 +13,8 @@ roof_area = (const.ROOM_LENGTH * const.ROOM_WIDTH)
 cool_energy_transfer_watt = const.COOL_BTUS / 3.41
 heat_energy_transfer_watt = const.HEAT_BTUS / 3.41
 
+power_transfers = torch.tensor([cool_energy_transfer_watt, heat_energy_transfer_watt])
+
 def clamp(val: float, min: float, max: float) -> float:
 	if val < min:
 		return min
@@ -35,23 +37,24 @@ def calc_transfer_thru_roof(in_temp: torch.Tensor, out_temp: torch.Tensor) -> to
 # -1 = full cool, 1 = full heat
 def calc_ac_effect(power: torch.Tensor) -> torch.Tensor:	
 	# print(f"{power} ({'HEAT' if power > 0 else ('COOL' if power < 0 else 'OFF')})")
-	change = (cool_energy_transfer_watt if power < 0 else heat_energy_transfer_watt) * power
-	return joule_to_temp_change(change * 60 * random.uniform(const.NOISE_MULT_MIN, const.NOISE_MULT_MAX))
+	change = torch.take(power_transfers, (power < 0).long()) * power
+	random_tensor = torch.rand(power.size()[0]) * (const.NOISE_MULT_MAX - const.NOISE_MULT_MIN) + const.NOISE_MULT_MIN
+	return joule_to_temp_change(change * random_tensor * 60)
 
 def calc_next_temp(power: torch.Tensor, cur_temp: torch.Tensor, time: int) -> torch.Tensor:
 	change = calc_transfer_thru_wall(cur_temp, const.OUTSIDE_TEMP[time])
 	change += calc_transfer_thru_roof(cur_temp, const.OUTSIDE_TEMP[time])
 	# power = clamp(power, -1, 1)
 
-	if power < 0 and not const.COOL_IS_CONTINUOUS:
-		power = torch.round(power * (const.COOL_SETTINGS_NUM - 1)) / (const.COOL_SETTINGS_NUM - 1)
-	if power > 0 and not const.HEAT_IS_CONTINUOUS:
-		power = torch.round(power * (const.HEAT_SETTINGS_NUM - 1)) / (const.HEAT_SETTINGS_NUM - 1)
+	# if power < 0 and not const.COOL_IS_CONTINUOUS:
+	# 	power = torch.round(power * (const.COOL_SETTINGS_NUM - 1)) / (const.COOL_SETTINGS_NUM - 1)
+	# if power > 0 and not const.HEAT_IS_CONTINUOUS:
+	# 	power = torch.round(power * (const.HEAT_SETTINGS_NUM - 1)) / (const.HEAT_SETTINGS_NUM - 1)
 	
-	if power < 0 and power > -const.COOL_MIN_POWER:
-		power = 0
-	if power > 0 and power < const.HEAT_MIN_POWER:
-		power = 0
+	# if power < 0 and power > -const.COOL_MIN_POWER:
+	# 	power = 0
+	# if power > 0 and power < const.HEAT_MIN_POWER:
+	# 	power = 0
 
 	change += calc_ac_effect(power)
 	return cur_temp + change
