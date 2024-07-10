@@ -16,7 +16,7 @@ import const
 
 env = gym_environment.Environment()
 	
-BATCH_SIZE = 100
+BATCH_SIZE = 400
 GAMMA = 0.99
 EPS_START = 0.9
 EPS_END = 0.05
@@ -74,7 +74,7 @@ def select_action(states):
 	global steps_done
 	sample = random.random()
 	eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * steps_done / EPS_DECAY)
-	steps_done += 1
+	steps_done += 400
 
 	if sample > eps_threshold:
 		with torch.no_grad():
@@ -132,14 +132,15 @@ def optimize_model():
 	torch.nn.utils.clip_grad_value_(policy_net.parameters(), 100)
 	optimizer.step()
 
-term_cols = os.get_terminal_size().columns
+#term_cols = os.get_terminal_size().columns
 
 if torch.cuda.is_available() or torch.backends.mps.is_available():
 	num_episodes = 600
 else:
 	num_episodes = 600
 
-# num_episodes = 1
+# num_episodes //= 100
+num_episodes = 1
 
 xvalues = np.arange(1441)
 temps = np.zeros(1441)
@@ -151,7 +152,7 @@ for i_episode in range(num_episodes):
 	total_reward = 0
 	# Initialize the environment and get its state
 
-	states, info = env.reset(num_setpoints=random.randint(2, 7), concurrent=1024)
+	states, info = env.reset(num_setpoints=random.randint(2, 7), concurrent=400)
 	
 	# states = torch.tensor(states, dtype=torch.float32, device=device).unsqueeze(0)
 
@@ -168,11 +169,10 @@ for i_episode in range(num_episodes):
 		# reward = torch.tensor([reward], device=device)
 		# done = terminated 
 	
-		if t % 10 == 0:
-			print(f"{' ' * 20}\r{t}", end="\r")
+		print(f"{' ' * 20}\r{t}", file=sys.stderr, end="\r")
 
 		if terminated:
-			print(f"{' ' * term_cols}\repisode {i_episode} sum {sum(rewards)}", end="\r")
+			print(f"{' ' * 20}\repisode {i_episode} sum {sum(rewards)}")
 			break
 
 
@@ -204,4 +204,4 @@ for i_episode in range(num_episodes):
 # plt.ioff()
 # plt.savefig("out.png", dpi=3000)
 
-torch.save(policy_net.state_dict(), "subtract_4_3k_random_weather.pt")
+torch.save(policy_net.state_dict(), "simul.pt")

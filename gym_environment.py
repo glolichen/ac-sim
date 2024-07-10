@@ -42,7 +42,7 @@ class Environment(gym.Env):
 		self._last_toggle = torch.full((self._concurrent,), -1000).to("cuda:0")
 		self._time = 0
 		self._length = length
-		self._start_time = (torch.rand().to("cuda:0") * (len(const.OUTSIDE_TEMP) - length)).long()
+		self._start_time = (torch.rand(self._concurrent).to("cuda:0") * (len(const.OUTSIDE_TEMP) - length)).long()
 
 		self._all_zeros = torch.zeros(self._concurrent).to("cuda:0")
 
