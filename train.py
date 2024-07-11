@@ -24,7 +24,7 @@ EPS_START = 0.9
 EPS_END = 0.05
 EPS_DECAY = 1000
 TAU = 0.005
-LR = 1e-4
+LR = 1e-4 * concurrent
 
 # device = torch.device("cpu")
 device = torch.device("cuda")
@@ -145,7 +145,8 @@ def optimize_model():
 	torch.nn.utils.clip_grad_value_(policy_net.parameters(), 100)
 	optimizer.step()
 
-num_episodes = 20
+num_episodes = 400
+num_episodes //= concurrent
 
 xvalues = np.arange(1441)
 temps = np.zeros(1441)
