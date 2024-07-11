@@ -60,6 +60,6 @@ for file in WEATHER_FILES:
 			OUTSIDE_TEMP.append(temp)
 
 # DEVICE = torch.device("cuda")
-DEVICE = torch.device("cpu")
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 OUTSIDE_TEMP = torch.tensor(OUTSIDE_TEMP, device=DEVICE)

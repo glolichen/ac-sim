@@ -14,11 +14,11 @@ import gym_environment
 import sys
 import const
 
-concurrent = 200
+concurrent = 1
 
 env = gym_environment.Environment()
 	
-# BATCH_SIZE = concurrent
+BATCH_SIZE = 128
 GAMMA = 0.99
 EPS_START = 0.9
 EPS_END = 0.05
@@ -91,10 +91,10 @@ def select_action(states):
 		return torch.tensor([env.action_space.sample() for _ in range(states.size()[0])], device=const.DEVICE, dtype=torch.long).to(const.DEVICE)
 
 def optimize_model():
-	# if len(memory) < BATCH_SIZE:
-	# 	return
+	if len(memory) < BATCH_SIZE:
+		return
 	
-	transitions = memory.sample(1)
+	transitions = memory.sample(BATCH_SIZE)
 	batch = Transition(*zip(*transitions))
 
 	#batch.state = torch.tensor([s for s in batch.state])
@@ -126,7 +126,7 @@ def optimize_model():
 	# on the "older" target_net; selecting their best reward with max(1).values
 	# This is merged based on the mask, such that we'll have either the expected
 	# state value or 0 in case the state was final.next_state_values
-	next_state_values = torch.zeros(concurrent, device=const.DEVICE)
+	next_state_values = torch.zeros(BATCH_SIZE, device=const.DEVICE)
 	with torch.no_grad():
 		next_state_values = target_net(next_states).max(1).values
 	# Compute the expected Q values
