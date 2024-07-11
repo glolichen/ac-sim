@@ -13,13 +13,13 @@ class Environment(gym.Env):
 	def __init__(self):
 		self.observation_space = gym.spaces.Box(0, 4000, shape=(5,), dtype=float)
 		self.action_space = gym.spaces.Discrete(3)
-		self._actions = torch.tensor([-1, 0, 1], dtype=torch.long, device=const.DEVICE)
+		self._actions = torch.tensor([-1, 0, 1], dtype=torch.long, device=torch.device("cuda"))
 
 	def _get_observations(self):
 		return torch.transpose(torch.stack((
 			self._cur_temp,
 			self._cur_setpoint,
-			torch.full((self._concurrent,), const.OUTSIDE_TEMP[self._time]).to(const.DEVICE),
+			torch.full((self._concurrent,), const.OUTSIDE_TEMP[self._time]).to("cuda:0"),
 			self._last_toggle,
 			self._old_power
 		)), 0, 1)
@@ -33,18 +33,18 @@ class Environment(gym.Env):
 
 		self._concurrent = concurrent
 		self._setpoint_list = {}
-		self._cur_setpoint = self._setpoint_list[0] = torch.rand(self._concurrent).to(const.DEVICE) * 8 + 20
+		self._cur_setpoint = self._setpoint_list[0] = torch.rand(self._concurrent).to("cuda:0") * 8 + 20
 		for i in range(num_setpoints - 1):
-			self._setpoint_list[random.randrange(1, length)] = torch.rand(self._concurrent).to(const.DEVICE) * 8 + 20
+			self._setpoint_list[random.randrange(1, length)] = torch.rand(self._concurrent).to("cuda:0") * 8 + 20
 		
-		self._cur_temp = torch.rand(self._concurrent).to(const.DEVICE) * 8 + 20
-		self._old_power = torch.full((self._concurrent,), 0).to(const.DEVICE)
-		self._last_toggle = torch.full((self._concurrent,), -1000).to(const.DEVICE)
+		self._cur_temp = torch.rand(self._concurrent).to("cuda:0") * 8 + 20
+		self._old_power = torch.full((self._concurrent,), 0).to("cuda:0")
+		self._last_toggle = torch.full((self._concurrent,), -1000).to("cuda:0")
 		self._time = 0
 		self._length = length
-		self._start_time = (torch.rand(self._concurrent).to(const.DEVICE) * (len(const.OUTSIDE_TEMP) - length)).long()
+		self._start_time = (torch.rand().to("cuda:0") * (len(const.OUTSIDE_TEMP) - length)).long()
 
-		self._all_zeros = torch.zeros(self._concurrent).to(const.DEVICE)
+		self._all_zeros = torch.zeros(self._concurrent).to("cuda:0")
 
 		return self._get_observations(), self._get_reward()
 
@@ -53,6 +53,26 @@ class Environment(gym.Env):
 		if self._time in self._setpoint_list:
 			self._cur_setpoint = self._setpoint_list[self._time]
 		
+		self._cur_wall_temp = sim.calc_next_wall_temp(
+			self._cur_wall_temp,
+			self._time + self._start_time
+		)
+
+		self._cur_int_wall_temp = sim.calc_next_int_wall_temp(
+			self._cur_int_wall_temp,
+			self._time + self._start_time
+		)
+
+		self._cur_roof_temp = sim.calc_next_roof_temp(
+			self._cur_roof_temp,
+			self._time + self._start_time
+		)
+
+		self._cur_int_roof_temp = sim.calc_next_int_roof_temp(
+			self._cur_int_roof_temp,
+			self._time + self._start_time
+		)
+
 		self._cur_temp = sim.calc_next_temp(
 			torch.take(self._actions, power),
 			self._cur_temp,
