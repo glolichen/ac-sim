@@ -11,15 +11,20 @@ HEAT_BTUS = 4000 # AC unit BTUs per second
 AIR_DENSITY = 1.204 # kg/m3
 AIR_HEAT_CAPACITY = 718 # J/kgC
 
-WALL_EMISSIVITY = 0.94 # no clue
 WALL_THICK = 0.12 # thickness (m)
 WALL_THERM_COND = 0.04 # thermal conductivity (W/mK)
+WALL_A_SURFACE_AREA = 15 # m^2
+WALL_B_SURFACE_AREA = 12 # m^2
+WALL_STARTING_TEMP = 20
 
-STEFAN_BOLTZMANN_CONSTANT = 0.000000567 # part of the heat transfer equation
+OUTSIDE_CONVECTION_COEFF = 10 # W/m^2 * C -----  affected by circulation of environment, may have to change later
+INSIDE_CONVECTION_COEFF = 3 # W/m^2 * C -----  affected by circulation of environment, may have to change later
 
-ROOF_EMISSIVITY = 0.8 # no clue
 ROOF_THICK = 0.05 # thickness (m)
 ROOF_THERM_COND = 0.062 # thermal conductivity (W/mK)
+
+FLOOR_AREA = 20 # meters same as roof
+
 
 ROOM_START_TEMP = 20
 OUTSIDE_TEMP = []
@@ -59,7 +64,4 @@ for file in WEATHER_FILES:
 			temp = (temp - 32) / 9 * 5
 			OUTSIDE_TEMP.append(temp)
 
-# DEVICE = torch.device("cuda")
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-OUTSIDE_TEMP = torch.tensor(OUTSIDE_TEMP, device=DEVICE)
+OUTSIDE_TEMP = torch.tensor(OUTSIDE_TEMP, device="cuda:0")

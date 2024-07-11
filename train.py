@@ -14,19 +14,19 @@ import gym_environment
 import sys
 import const
 
-concurrent = 1
-
 env = gym_environment.Environment()
 	
-BATCH_SIZE = 128
+BATCH_SIZE = 100
 GAMMA = 0.99
 EPS_START = 0.9
 EPS_END = 0.05
 EPS_DECAY = 1000
 TAU = 0.005
-LR = 1e-4 * concurrent
+LR = 1e-4
 
-torch.set_default_device(const.DEVICE)
+# device = torch.device("cpu")
+device = torch.device("cuda")
+torch.set_default_device(device)
 
 # from the pytorch page on dqn
 Transition = namedtuple("Transition", ("state", "action", "next_state", "reward"))
@@ -61,8 +61,8 @@ action_size = env.action_space.n
 state, _ = env.reset()
 observation_size = state.size()[1]
 
-policy_net = DQN(observation_size, action_size).to(const.DEVICE)
-target_net = DQN(observation_size, action_size).to(const.DEVICE)
+policy_net = DQN(observation_size, action_size).to(device)
+target_net = DQN(observation_size, action_size).to(device)
 target_net.load_state_dict(policy_net.state_dict())
 
 optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
@@ -74,7 +74,7 @@ def select_action(states):
 	global steps_done
 	sample = random.random()
 	eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * steps_done / EPS_DECAY)
-	steps_done += concurrent
+	steps_done += 1
 
 	if sample > eps_threshold:
 		with torch.no_grad():
@@ -82,13 +82,13 @@ def select_action(states):
 			# second column on max result is index of where max element was
 			# found, so we pick action with the larger expected reward.
 			# print(state[0], policy_net(state[0]).)
-			return torch.cat([policy_net(states[i]).max(0).indices.view(1) for i in range(states.size()[0])]).to(const.DEVICE)
+			return torch.cat([policy_net(states[i]).max(0).indices.view(1) for i in range(states.size()[0])]).to("cuda:0")
 			# return ret
 			# sys.exit(100)
 			# return torch.cat([policy_net(state[i]).max() for i in range(states.size()[0])])
 	else:
 		# print("other", torch.tensor([env.action_space.sample() for _ in range(states.size()[0])], device=device, dtype=torch.long))
-		return torch.tensor([env.action_space.sample() for _ in range(states.size()[0])], device=const.DEVICE, dtype=torch.long).to(const.DEVICE)
+		return torch.tensor([env.action_space.sample() for _ in range(states.size()[0])], device=device, dtype=torch.long).to("cuda:0")
 
 def optimize_model():
 	if len(memory) < BATCH_SIZE:
@@ -97,22 +97,11 @@ def optimize_model():
 	transitions = memory.sample(BATCH_SIZE)
 	batch = Transition(*zip(*transitions))
 
-	#batch.state = torch.tensor([s for s in batch.state])
-	#batch.action = torch.tensor([s for s in batch.action])
-	#batch.next_state = torch.tensor([s for s in batch.next_state])
-	#batch.reward = torch.tensor([s for s in batch.reward])
-
-	# print(batch)
-	# sys.exit(1)
-
 	next_states = torch.cat([s for s in batch.next_state if s is not None])
 
 	state_batch = torch.cat(batch.state)
 	action_batch = torch.unsqueeze(torch.cat(batch.action), 1)
 	reward_batch = torch.cat(batch.reward)
-
-#	print(state_batch.size(), action_batch.size(), reward_batch.size())
-#	sys.exit(1)
 
 	# Compute Q(s_t, a) - the model computes Q(s_t), then we select the
 	# columns of actions taken. These are the actions which would've been taken
@@ -126,7 +115,7 @@ def optimize_model():
 	# on the "older" target_net; selecting their best reward with max(1).values
 	# This is merged based on the mask, such that we'll have either the expected
 	# state value or 0 in case the state was final.next_state_values
-	next_state_values = torch.zeros(BATCH_SIZE, device=const.DEVICE)
+	next_state_values = torch.zeros(BATCH_SIZE * 8, device=device)
 	with torch.no_grad():
 		next_state_values = target_net(next_states).max(1).values
 	# Compute the expected Q values
@@ -143,8 +132,14 @@ def optimize_model():
 	torch.nn.utils.clip_grad_value_(policy_net.parameters(), 100)
 	optimizer.step()
 
-num_episodes = 400
-num_episodes //= concurrent
+term_cols = os.get_terminal_size().columns
+
+if torch.cuda.is_available() or torch.backends.mps.is_available():
+	num_episodes = 600
+else:
+	num_episodes = 600
+
+# num_episodes = 1
 
 xvalues = np.arange(1441)
 temps = np.zeros(1441)
@@ -156,7 +151,7 @@ for i_episode in range(num_episodes):
 	total_reward = 0
 	# Initialize the environment and get its state
 
-	states, info = env.reset(num_setpoints=random.randint(2, 7), concurrent=concurrent)
+	states, info = env.reset(num_setpoints=random.randint(2, 7), concurrent=1024)
 	
 	# states = torch.tensor(states, dtype=torch.float32, device=device).unsqueeze(0)
 
@@ -173,11 +168,11 @@ for i_episode in range(num_episodes):
 		# reward = torch.tensor([reward], device=device)
 		# done = terminated 
 	
-		if t % 50 == 0:
-			print(f"{' ' * 20}\r{t}", file=sys.stderr, end="\r")
+		if t % 10 == 0:
+			print(f"{' ' * 20}\r{t}", end="\r")
 
 		if terminated:
-			print(f"{' ' * 20}\repisode {i_episode} sum {sum(rewards)}")
+			print(f"{' ' * term_cols}\repisode {i_episode} sum {sum(rewards)}", end="\r")
 			break
 
 
@@ -185,9 +180,7 @@ for i_episode in range(num_episodes):
 		# print("stuffs")
 		# print(states)
 		# print(actions)
-		# print("before", len(memory), states.size())
 		memory.push(states, actions, observation, reward)
-		# print("after", len(memory))
 
 		# Move to the next state
 		states = observation
@@ -211,4 +204,4 @@ for i_episode in range(num_episodes):
 # plt.ioff()
 # plt.savefig("out.png", dpi=3000)
 
-torch.save(policy_net.state_dict(), "simul.pt")
+torch.save(policy_net.state_dict(), "subtract_4_3k_random_weather.pt")

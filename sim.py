@@ -13,7 +13,7 @@ roof_area = (const.ROOM_LENGTH * const.ROOM_WIDTH)
 cool_energy_transfer_watt = const.COOL_BTUS / 3.41
 heat_energy_transfer_watt = const.HEAT_BTUS / 3.41
 
-power_transfers = torch.tensor([cool_energy_transfer_watt, heat_energy_transfer_watt], device=const.DEVICE)
+power_transfers = torch.tensor([cool_energy_transfer_watt, heat_energy_transfer_watt], device="cuda:0")
 
 def clamp(val: float, min: float, max: float) -> float:
 	if val < min:
@@ -25,13 +25,52 @@ def clamp(val: float, min: float, max: float) -> float:
 def joule_to_temp_change(joule: torch.Tensor) -> torch.Tensor:
 	return joule / (room_air_mass * const.AIR_HEAT_CAPACITY)
 
-def calc_transfer_thru_wall(in_temp: torch.Tensor, out_temp: torch.Tensor) -> torch.Tensor:
-	change = wall_area_sum * (out_temp - in_temp) * const.WALL_THERM_COND / const.WALL_THICK
+# convection heat transfer equation Q = hA(Delta)T
+
+def calc_transfer_into_wall(in_temp: torch.Tensor, out_temp: torch.Tensor) -> torch.Tensor:
+	change = const.OUTSIDE_CONVECTION_COEFF * wall_area_sum * (out_temp - in_temp)/2
 	return joule_to_temp_change(change * 60)
 
-def calc_transfer_thru_roof(in_temp: torch.Tensor, out_temp: torch.Tensor) -> torch.Tensor:
-	change = roof_area * (out_temp - in_temp) * const.ROOF_THERM_COND / const.ROOF_THICK
+def calc_next_wall_temp(cur_wall_temp: torch.Tensor, time: torch.Tensor) -> torch.Tensor:
+	change = calc_transfer_into_wall(cur_temp, torch.take((const.OUTSIDE_TEMP, time)))
+	return cur_wall_temp + change
+
+def calc_transfer_thru_wall(in_temp: torch.Tensor, cur_wall_temp: torch.Tensor) -> torch.Tensor:
+	change = wall_area_sum * (in_temp - cur_wall_temp) * const.WALL_THERM_COND / const.WALL_THICK
 	return joule_to_temp_change(change * 60)
+
+def calc_next_int_wall_temp(cur_temp: torch.Tensor, cur_wall_temp: torch.Tensor) -> torch.Tensor:
+	change = calc_transfer_thru_wall(cur_temp, cur_wall_temp)
+	return cur_wall_temp + change
+
+def calc_transfer_wall_to_air(in_temp: torch.Tensor, cur_int_wall_temp: torch.Tensor) -> torch.Tensor:
+	change = const.INSIDE_CONVECTION_COEFF * wall_area_sum * (cur_int_wall_temp - in_temp)
+	return joule_to_temp_change(change * 60)
+
+def calc_transfer_into_roof(in_temp: torch.Tensor, out_temp: torch.Tensor) -> torch.Tensor:
+	change = const.OUTSIDE_CONVECTION_COEFF * roof_area * (out_temp - in_temp)/2
+	return joule_to_temp_change(change * 60)
+
+def calc_next_roof_temp(cur_roof_temp: torch.Tensor, time: torch.Tensor) -> torch.Tensor:
+	change = calc_transfer_into_roof(cur_temp, torch.take((const.OUTSIDE_TEMP, time)))
+	return cur_roof_temp + change
+
+def calc_transfer_thru_roof(in_temp: torch.Tensor, cur_roof_temp: torch.Tensor) -> torch.Tensor:
+	change = roof_area * (in_temp - cur_roof_temp) * const.ROOF_THERM_COND / const.ROOF_THICK
+	return joule_to_temp_change(change * 60)
+
+def calc_next_int_roof_temp(cur_temp: torch.Tensor, cur_roof_temp: torch.Tensor) -> torch.Tensor:
+	change = calc_transfer_thru_roof(cur_temp, cur_roof_temp)
+	return cur_roof_temp + change
+
+def calc_transfer_roof_to_air(in_temp: torch.Tensor, cur_int_roof_temp: torch.Tensor) -> torch.Tensor:
+	change = const.INSIDE_CONVECTION_COEFF * roof_area * (cur_int_roof_temp - in_temp)
+	return joule_to_temp_change(change * 60)
+
+
+# def calc_transfer_thru_roof(in_temp: torch.Tensor, out_temp: torch.Tensor) -> torch.Tensor:
+# 	change = roof_area * (out_temp - in_temp) * const.ROOF_THERM_COND / const.ROOF_THICK
+# 	return joule_to_temp_change(change * 60)
 
 # -1 <= power <= 1
 # -1 = full cool, 1 = full heat
@@ -41,22 +80,29 @@ def calc_ac_effect(power: torch.Tensor) -> torch.Tensor:
 	return joule_to_temp_change(change * random_tensor * 60)
 
 def calc_next_temp(power: torch.Tensor, cur_temp: torch.Tensor, time: torch.Tensor) -> torch.Tensor:
-	change = calc_transfer_thru_wall(cur_temp, torch.take(const.OUTSIDE_TEMP, time))
-	change += calc_transfer_thru_roof(cur_temp, torch.take(const.OUTSIDE_TEMP, time))
-	# power = clamp(power, -1, 1)
-
-	# if power < 0 and not const.COOL_IS_CONTINUOUS:
-	# 	power = torch.round(power * (const.COOL_SETTINGS_NUM - 1)) / (const.COOL_SETTINGS_NUM - 1)
-	# if power > 0 and not const.HEAT_IS_CONTINUOUS:
-	# 	power = torch.round(power * (const.HEAT_SETTINGS_NUM - 1)) / (const.HEAT_SETTINGS_NUM - 1)
-	
-	# if power < 0 and power > -const.COOL_MIN_POWER:
-	# 	power = 0
-	# if power > 0 and power < const.HEAT_MIN_POWER:
-	# 	power = 0
-
+	change = calc_transfer_wall_to_air(cur_temp, torch.take(const.OUTSIDE_TEMP, time))
 	change += calc_ac_effect(power)
+	change += calc_transfer_roof_to_air(cur_temp, torch.take(const.OUTSIDE_TEMP, time))
 	return cur_temp + change
+
+
+# def calc_next_temp(power: torch.Tensor, cur_temp: torch.Tensor, time: torch.Tensor) -> torch.Tensor:
+# 	change = calc_transfer_thru_wall(cur_temp, torch.take(const.OUTSIDE_TEMP, time))
+# 	change += calc_transfer_thru_roof(cur_temp, torch.take(const.OUTSIDE_TEMP, time))
+# 	# power = clamp(power, -1, 1)
+
+# 	# if power < 0 and not const.COOL_IS_CONTINUOUS:
+# 	# 	power = torch.round(power * (const.COOL_SETTINGS_NUM - 1)) / (const.COOL_SETTINGS_NUM - 1)
+# 	# if power > 0 and not const.HEAT_IS_CONTINUOUS:
+# 	# 	power = torch.round(power * (const.HEAT_SETTINGS_NUM - 1)) / (const.HEAT_SETTINGS_NUM - 1)
+	
+# 	# if power < 0 and power > -const.COOL_MIN_POWER:
+# 	# 	power = 0
+# 	# if power > 0 and power < const.HEAT_MIN_POWER:
+# 	# 	power = 0
+
+# 	change += calc_ac_effect(power)
+# 	return cur_temp + change
 
 if __name__ == "__main__":
 	random.seed(1)
