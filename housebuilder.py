@@ -49,6 +49,10 @@ class Constants(typing.NamedTuple):
 	int_wall_outside_heat_capacity: float
 	int_wall_outside_density: float
 
+	damper_leak: float
+
+	epsilon: float
+
 class Opening(typing.NamedTuple):
 	start: float
 	end: float
@@ -95,18 +99,23 @@ class Room:
 		self.air_temp = random.uniform(20, 28)
 
 	def joule_to_temp_air(self, joule: float) -> float:
-		return joule / (self.volume * const.air_density * const.air_heat_capacity)
+		return joule / (self.volume * constants.air_density * constants.air_heat_capacity)
 	
 	def calc_int_convection_to_wall(self, int_wall_temp: float):
 		surface_area = self.height * self.perimeter
-		wall_outside_mass = surface_area * const.int_wall_outside_thick * const.int_wall_outside_density
-		change = const.inside_convection * surface_area * (self.air_temp - int_wall_temp)
-		change = change * 60 / (wall_outside_mass * const.int_wall_outside_heat_capacity)
+		wall_outside_mass = surface_area * constants.int_wall_outside_thick * constants.int_wall_outside_density
+		change = constants.inside_convection * surface_area * (self.air_temp - int_wall_temp)
+		change = change * 60 / (wall_outside_mass * constants.int_wall_outside_heat_capacity)
 		self.int_wall_temp = int_wall_temp + change
 	def calc_int_convection_to_room(self, area: float):
-		change = const.inside_convection * area * (self.int_wall_temp - self.air_temp)
-		change = change * 60 / (self.volume * const.air_density * const.air_heat_capacity)
+		change = constants.inside_convection * area * (self.int_wall_temp - self.air_temp)
+		change = change * 60 / (self.volume * constants.air_density * constants.air_heat_capacity)
 		self.air_temp += change
+	
+	def set_setpoint(self, setpoint: float):
+		self.setpoint = setpoint
+	def get_setpoint(self) -> float:
+		return self.setpoint
 	
 	def get_temp(self) -> float:
 		return self.air_temp
@@ -129,6 +138,7 @@ class House:
 		self.rooms = [[] for _ in range(floors)]
 		self.internal_walls = [[] for _ in range(floors)]
 		self.external_perimeter = [[] for _ in range(floors)]
+		self.dampers = [[] for _ in range(floors)]
 		self.height = [0 for _ in range(floors)]
 
 		self.int_wall_temp = self.int_roof_temp = random.uniform(20, 28)
@@ -137,10 +147,13 @@ class House:
 		self.total_external_perimeter = 0
 		self.total_roof_area = 0
 
+		self.ac_status = constants.settings.index(0)
+
 	def add_room(self, room: Room, floor: int) -> None:
 		self.rooms[floor].append(room)
 		self.internal_walls[floor].append([])
 		self.external_perimeter[floor].append(room.perimeter)
+		self.dampers[floor].append(False)
 		self.total_external_perimeter += room.perimeter
 		self.total_roof_area += room.floor_area
 
@@ -179,47 +192,47 @@ class House:
 	
 	def calc_weather_convection_wall(self, outside_temp: float) -> None:
 		surface_area = sum(self.height) * self.total_external_perimeter
-		wall_outside_mass = surface_area * const.ext_wall_ext_thick * const.ext_wall_ext_density
-		change = const.outside_convection * surface_area * (outside_temp - self.ext_wall_temp)
-		change = change * 60 / (wall_outside_mass * const.ext_wall_ext_heat_capacity)
+		wall_outside_mass = surface_area * constants.ext_wall_ext_thick * constants.ext_wall_ext_density
+		change = constants.outside_convection * surface_area * (outside_temp - self.ext_wall_temp)
+		change = change * 60 / (wall_outside_mass * constants.ext_wall_ext_heat_capacity)
 		self.ext_wall_temp += change
 	def calc_weather_convection_roof(self, outside_temp: float) -> None:
-		roof_outside_mass = self.total_roof_area * const.ext_roof_ext_thick * const.ext_roof_ext_density
-		change = const.outside_convection * self.total_roof_area * (outside_temp - self.ext_roof_temp)
-		change = change * 60 / (roof_outside_mass * const.ext_roof_ext_heat_capacity)
+		roof_outside_mass = self.total_roof_area * constants.ext_roof_ext_thick * constants.ext_roof_ext_density
+		change = constants.outside_convection * self.total_roof_area * (outside_temp - self.ext_roof_temp)
+		change = change * 60 / (roof_outside_mass * constants.ext_roof_ext_heat_capacity)
 		self.ext_roof_temp += change
 	def calc_ext_wall_conduction(self):
 		surface_area = sum(self.height) * self.total_external_perimeter
-		wall_inside_mass = surface_area * const.ext_wall_int_thick * const.ext_wall_int_density
-		wall_outside_mass = surface_area * const.ext_wall_ext_thick * const.ext_wall_ext_density
-		change = surface_area * (self.ext_wall_temp - self.int_wall_temp) * const.ext_wall_therm_cond / const.ext_wall_thick
-		change_int = change * 60 / (wall_inside_mass * const.ext_wall_int_heat_capacity)
-		change_ext = change * 60 / (wall_outside_mass * const.ext_wall_ext_heat_capacity)
+		wall_inside_mass = surface_area * constants.ext_wall_int_thick * constants.ext_wall_int_density
+		wall_outside_mass = surface_area * constants.ext_wall_ext_thick * constants.ext_wall_ext_density
+		change = surface_area * (self.ext_wall_temp - self.int_wall_temp) * constants.ext_wall_therm_cond / constants.ext_wall_thick
+		change_int = change * 60 / (wall_inside_mass * constants.ext_wall_int_heat_capacity)
+		change_ext = change * 60 / (wall_outside_mass * constants.ext_wall_ext_heat_capacity)
 		self.int_wall_temp += change_int
 		self.ext_wall_temp -= change_ext
 	def calc_roof_conduction(self):
-		roof_inside_mass = self.total_roof_area * const.ext_roof_int_thick * const.ext_roof_int_density
-		roof_outside_mass = self.total_roof_area * const.ext_roof_ext_thick * const.ext_roof_ext_density
-		change = self.total_roof_area * (self.ext_roof_temp - self.int_roof_temp) * const.ext_roof_therm_cond / const.ext_roof_thick
-		change_int = change * 60 / (roof_inside_mass * const.ext_roof_int_heat_capacity)
-		change_ext = change * 60 / (roof_outside_mass * const.ext_roof_ext_heat_capacity)
+		roof_inside_mass = self.total_roof_area * constants.ext_roof_int_thick * constants.ext_roof_int_density
+		roof_outside_mass = self.total_roof_area * constants.ext_roof_ext_thick * constants.ext_roof_ext_density
+		change = self.total_roof_area * (self.ext_roof_temp - self.int_roof_temp) * constants.ext_roof_therm_cond / constants.ext_roof_thick
+		change_int = change * 60 / (roof_inside_mass * constants.ext_roof_int_heat_capacity)
+		change_ext = change * 60 / (roof_outside_mass * constants.ext_roof_ext_heat_capacity)
 		self.int_roof_temp += change_int
 		self.ext_roof_temp -= change_ext
 	def calc_ext_convection_to_room(self, floor: int, room_num: int):
 		room: Room = self.rooms[floor][room_num]
 		# only external facing walls
 		surface_area = sum(self.height) * self.external_perimeter[floor][room_num]
-		wall_inside_mass = surface_area * const.ext_wall_int_thick * const.ext_wall_int_density
-		roof_inside_mass = self.total_roof_area * const.ext_roof_int_thick * const.ext_roof_int_density
+		wall_inside_mass = surface_area * constants.ext_wall_int_thick * constants.ext_wall_int_density
+		roof_inside_mass = self.total_roof_area * constants.ext_roof_int_thick * constants.ext_roof_int_density
 
-		change_wall = const.inside_convection * surface_area * (self.int_wall_temp - room.get_temp())
-		change_roof = const.inside_convection * self.total_roof_area * (self.int_roof_temp - room.get_temp())
+		change_wall = constants.inside_convection * surface_area * (self.int_wall_temp - room.get_temp())
+		change_roof = constants.inside_convection * self.total_roof_area * (self.int_roof_temp - room.get_temp())
 		
-		change_wall_room = change_wall * 60 / (room.get_volume() * const.air_density * const.air_heat_capacity)
-		change_wall_int = change_wall * 60 / (wall_inside_mass * const.ext_wall_ext_heat_capacity)
+		change_wall_room = change_wall * 60 / (room.get_volume() * constants.air_density * constants.air_heat_capacity)
+		change_wall_int = change_wall * 60 / (wall_inside_mass * constants.ext_wall_ext_heat_capacity)
 
-		change_roof_room = change_roof * 60 / (room.get_volume() * const.air_density * const.air_heat_capacity)
-		change_roof_int = change_roof * 60 / (roof_inside_mass * const.ext_roof_ext_heat_capacity)
+		change_roof_room = change_roof * 60 / (room.get_volume() * constants.air_density * constants.air_heat_capacity)
+		change_roof_int = change_roof * 60 / (roof_inside_mass * constants.ext_roof_ext_heat_capacity)
 
 		room.add_air_temp(change_wall_room + change_roof_room)
 		self.int_wall_temp -= change_wall_int
@@ -227,15 +240,59 @@ class House:
 
 	# modifies room0 and room1 with new interior wall temperature
 	def calc_conduction_between_rooms(self, room0: Room, room1: Room, area: float):
-		wall_outside_mass = area * const.int_wall_outside_thick * const.int_wall_outside_density
+		wall_outside_mass = area * constants.int_wall_outside_thick * constants.int_wall_outside_density
 		change = area * (room0.get_int_wall_temp() - room1.get_int_wall_temp()) * \
-					const.int_wall_therm_cond / const.int_wall_thick
-		change = change * 60 / (wall_outside_mass * const.int_wall_outside_heat_capacity)
+					constants.int_wall_therm_cond / constants.int_wall_thick
+		change = change * 60 / (wall_outside_mass * constants.int_wall_outside_heat_capacity)
 
 		room0.set_int_wall_temp(room0.get_int_wall_temp() - change)
 		room1.set_int_wall_temp(room1.get_int_wall_temp() + change)
+	
+	def calc_ac_effect(self, ac_status: int, dampers: list):
+		ac_mode = constants.settings[ac_status]
+		if ac_mode < 0:
+			energy_transfer = constants.cooler_btu / 3.41 * ac_mode
+		elif ac_mode > 0:
+			energy_transfer = constants.heater_btu / 3.41 * ac_mode
+		else:
+			energy_transfer = 0
 
-	def step(self, outside_temp: float):
+		room_count = 0
+		for floor in self.rooms:
+			for _ in floor:
+				room_count += 1
+		
+		damper_open_count, extra_power = 0, 0
+		power_pct = [[1 / room_count for _ in floor] for floor in self.rooms]
+		for i in range(len(self.rooms)):
+			for j in range(len(self.rooms[i])):
+				if dampers[i][j]:
+					extra_power += power_pct[i][j] * (1 - constants.damper_leak)
+					power_pct[i][j] *= constants.damper_leak
+				else:
+					damper_open_count += 1
+
+		if damper_open_count > 0:
+			for i in range(len(self.rooms)):
+				for j in range(len(self.rooms[i])):
+					if not dampers[i][j]:
+						power_pct[i][j] += extra_power / damper_open_count
+
+			# check
+			total_power = 0
+			for i in range(len(self.rooms)):
+				for j in range(len(self.rooms[i])):
+					total_power += power_pct[i][j]
+			if not fp_equal(total_power, 1):
+				error(f"incorrect total power: {total_power}")
+
+		for i in range(len(self.rooms)):
+			for j in range(len(self.rooms[i])):
+				room: Room = self.rooms[i][j]
+				change = room.joule_to_temp_air(power_pct[i][j] * energy_transfer * 60)
+				room.add_air_temp(change)
+	
+	def step(self, outside_temp: float, ac_status: int, dampers: list):
 		prev_int_wall_temp = self.int_wall_temp
 
 		self.calc_weather_convection_wall(outside_temp)
@@ -269,6 +326,11 @@ class House:
 					self.calc_conduction_between_rooms(room0, room1, wall_area)
 					room0.calc_int_convection_to_room(wall[1])
 					room1.calc_int_convection_to_room(wall[1])
+
+			self.ac_status = ac_status
+			self.dampers = dampers
+
+			self.calc_ac_effect(ac_status, dampers)
 
 	def __repr__(self):
 		return str(self.__dict__)
@@ -349,8 +411,8 @@ def build_house(file_name: str) -> House:
 	with open(file_name, "r") as file:
 		cfg = json.load(file)
 
-	global const
-	const = Constants(**cfg["constants"])
+	global constants
+	constants = Constants(**cfg["constants"])
 	
 	floors = cfg["floors"]
 
@@ -420,3 +482,6 @@ def build_house(file_name: str) -> House:
 		break
 
 	return house
+
+def get_constants() -> Constants:
+	return constants
