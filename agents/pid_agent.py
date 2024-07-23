@@ -1,5 +1,12 @@
 import housebuilder
 
+KP = 0.5
+KI = 0.0001
+KD = 0.05
+
+class PIDController:
+	pass
+
 constants = housebuilder.get_constants()
 
 def prelim_agent(house: housebuilder.House, room0_temp: float, room0_setp: float, room1_temp: float, room1_setp: float):
