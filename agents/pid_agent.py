@@ -1,13 +1,25 @@
 import housebuilder
 
-KP = 0.5
-KI = 0.0001
-KD = 0.05
+constants = housebuilder.get_constants()
+
+KP = 0.1
+KI = 0
+KD = 0
 
 class PIDController:
-	pass
-
-constants = housebuilder.get_constants()
+	def __init__(self, KP: float, KI: float, KD: float, FF: float):
+		self.KP, self.KI, self.KD, self.FF = KP, KI, KD, FF
+		self.integral = 0
+		self.old_error = None
+	def calc(self, error: float):
+		self.integral += error
+		P = error * self.KP
+		I = self.integral * self.KI
+		D = (error - self.old_error) * self.KD
+		self.old_error = error
+		return P + I + D + self.FF
+	
+pid = PIDController(KP, KI, KD)
 
 def prelim_agent(house: housebuilder.House, room0_temp: float, room0_setp: float, room1_temp: float, room1_setp: float):
 	if room0_temp > room0_setp + constants.epsilon and room1_temp > room1_setp + constants.epsilon:

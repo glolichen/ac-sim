@@ -85,7 +85,7 @@
 		"ext_wall_thick": 0.20,
 		"int_wall_thick": 0.12,
 		"ext_wall_therm_cond": 0.04,
-		"int_wall_therm_cond": 0.0,
+		"int_wall_therm_cond": 0.18,
 
 		"ext_roof_thick": 0.12,
 		"int_roof_thick": 0.12,
@@ -120,6 +120,6 @@
 
 		"damper_leak": 0.05,
 
-		"epsilon": 1
+		"epsilon": 0.5
 	}
 }
