@@ -13,7 +13,7 @@ def prelim_agent(house: housebuilder.House, room0_temp: float, room0_setp: float
 	if room1_temp > room1_setp + constants.epsilon and abs(room0_temp - room0_setp) < constants.epsilon:
 		return (constants.settings.index(-1), [[True, False]])
 	
-	if room0_setp < room0_setp - constants.epsilon and abs(room1_temp - room1_setp) < constants.epsilon:
+	if room0_temp < room0_setp - constants.epsilon and abs(room1_temp - room1_setp) < constants.epsilon:
 		return (constants.settings.index(1), [[False, True]])
 	if room1_temp < room1_setp - constants.epsilon and abs(room0_temp - room0_setp) < constants.epsilon:
 		return (constants.settings.index(1), [[True, False]])
