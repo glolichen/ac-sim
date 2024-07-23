@@ -1,10 +1,18 @@
 import housebuilder
 
-constants = housebuilder.get_constants()
-
-KP = 0.1
-KI = 0
+KP = 0.3
+KI = 0.001
 KD = 0
+FF = 0
+
+constants = housebuilder.get_constants()
+def get_closest_setting(power: float):
+	best, best_error = -1, 10000
+	for i in range(len(constants.settings)):
+		error = abs(constants.settings[i] - power)
+		if error < best_error:
+			best, best_error = i, error
+	return best
 
 class PIDController:
 	def __init__(self, KP: float, KI: float, KD: float, FF: float):
@@ -15,42 +23,44 @@ class PIDController:
 		self.integral += error
 		P = error * self.KP
 		I = self.integral * self.KI
-		D = (error - self.old_error) * self.KD
+		D = (error - self.old_error) * self.KD if self.old_error is not None else 0
 		self.old_error = error
-		return P + I + D + self.FF
+		return get_closest_setting(P + I + D + self.FF)
 	
-pid = PIDController(KP, KI, KD)
+pid = PIDController(KP, KI, KD, FF)
 
 def prelim_agent(house: housebuilder.House, room0_temp: float, room0_setp: float, room1_temp: float, room1_setp: float):
-	if room0_temp > room0_setp + constants.epsilon and room1_temp > room1_setp + constants.epsilon:
-		return (constants.settings.index(-1), [[False, False]])
-	if room0_temp < room0_setp - constants.epsilon and room1_temp < room1_setp - constants.epsilon:
-		return (constants.settings.index(1), [[False, False]])
+	error0 = room0_setp - room0_temp
+	error1 = room1_setp - room1_temp
+	avg_error = (error0 + error1) / 2
 
-	if room0_temp > room0_setp + constants.epsilon and abs(room1_temp - room1_setp) < constants.epsilon:
-		return (constants.settings.index(-1), [[False, True]])
-	if room1_temp > room1_setp + constants.epsilon and abs(room0_temp - room0_setp) < constants.epsilon:
-		return (constants.settings.index(-1), [[True, False]])
+	if room0_temp > room0_setp + constants.epsilon and room1_temp > room1_setp + constants.epsilon:
+		return (pid.calc(avg_error), [[False, False]])
+	if room0_temp < room0_setp - constants.epsilon and room1_temp < room1_setp - constants.epsilon:
+		return (pid.calc(avg_error), [[False, False]])
+
+	if room0_temp > room0_setp + constants.epsilon and abs(error1) < constants.epsilon:
+		return (pid.calc(error0), [[False, True]])
+	if room1_temp > room1_setp + constants.epsilon and abs(error0) < constants.epsilon:
+		return (pid.calc(error1), [[True, False]])
 	
-	if room0_setp < room0_setp - constants.epsilon and abs(room1_temp - room1_setp) < constants.epsilon:
-		return (constants.settings.index(1), [[False, True]])
-	if room1_temp < room1_setp - constants.epsilon and abs(room0_temp - room0_setp) < constants.epsilon:
-		return (constants.settings.index(1), [[True, False]])
+	if room0_temp < room0_setp - constants.epsilon and abs(error1) < constants.epsilon:
+		return (pid.calc(error0), [[False, True]])
+	if room1_temp < room1_setp - constants.epsilon and abs(error0) < constants.epsilon:
+		return (pid.calc(error1), [[True, False]])
 	
 	if room0_temp > room0_setp + constants.epsilon and room1_temp < room1_setp - constants.epsilon:
-		error0, error1 = abs(room0_temp - room0_setp), abs(room1_temp - room1_setp)
-		if error0 > error1:
-			return (constants.settings.index(-1), [[False, True]])
+		if abs(error0) > abs(error1):
+			return (pid.calc(error0), [[False, True]])
 		else:
-			return (constants.settings.index(1), [[True, False]])
+			return (pid.calc(error1), [[True, False]])
 	if room0_temp < room0_setp - constants.epsilon and room1_temp > room1_setp + constants.epsilon:
-		error0, error1 = abs(room0_temp - room0_setp), abs(room1_temp - room1_setp)
-		if error0 > error1:
-			return (constants.settings.index(1), [[False, True]])
+		if abs(error0) > abs(error1):
+			return (pid.calc(error0), [[False, True]])
 		else:
-			return (constants.settings.index(-1), [[True, False]])
+			return (pid.calc(error1), [[True, False]])
 	
-	if abs(room0_temp - room0_setp) < constants.epsilon and abs(room1_temp - room1_setp) < constants.epsilon:
+	if abs(error0) < constants.epsilon and abs(error1) < constants.epsilon:
 		return (constants.settings.index(0), house.dampers)
 
 	return (house.ac_status, house.dampers)

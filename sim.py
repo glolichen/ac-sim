@@ -79,7 +79,8 @@ if __name__ == "__main__":
 	house = housebuilder.build_house("2r_simple.json")
 
 	import agents.very_dumb_agent
-	agent = agents.very_dumb_agent.agent
+	import agents.pid_agent
+	agent = agents.pid_agent.agent
 
 	fig = plt.figure()
 	spec = gridspec.GridSpec(nrows=3, ncols=1, height_ratios=[2, 2, 1], hspace=0.25)
@@ -134,7 +135,7 @@ if __name__ == "__main__":
 		setp1[i] = room1.get_setpoint()
 		outside_temp[i] = const.OUTSIDE_TEMP[weather_start + i]
 
-		ac_status, dampers = agents.very_dumb_agent.agent(house, const.OUTSIDE_TEMP[weather_start + i])
+		ac_status, dampers = agent(house, const.OUTSIDE_TEMP[weather_start + i])
 		# ac_status = housebuilder.get_constants().settings.index(0)
 		# print(housebuilder.get_constants().settings[ac_status], dampers)
 		house.step(const.OUTSIDE_TEMP[weather_start + i], ac_status, dampers)
