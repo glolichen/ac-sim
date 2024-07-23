@@ -209,6 +209,7 @@ class House:
 		change = constants.outside_convection * self.total_roof_area * (outside_temp - self.ext_roof_temp)
 		change = change * 60 / (roof_outside_mass * constants.ext_roof_ext_heat_capacity)
 		self.ext_roof_temp += change
+
 	def calc_ext_wall_conduction(self, floor: int, room_num: int):
 		wall_area = self.height[floor] * self.rooms[floor][room_num].get_perimeter()
 		wall_inside_mass = wall_area * constants.ext_wall_int_thick * constants.ext_wall_int_density
@@ -229,6 +230,7 @@ class House:
 		change_ext = change * 60 / (roof_outside_mass * constants.ext_roof_ext_heat_capacity)
 		self.int_roof_temp[floor][room_num] += change_int
 		self.ext_roof_temp -= change_ext
+
 	def calc_ext_convection_to_room(self, floor: int, room_num: int):
 		room: Room = self.rooms[floor][room_num]
 		# only external facing walls
@@ -243,10 +245,10 @@ class House:
 		change_roof = constants.inside_convection * roof_area * (self.int_roof_temp[floor][room_num] - room.get_temp())
 		
 		change_wall_room = change_wall * 60 / (room.get_volume() * constants.air_density * constants.air_heat_capacity)
-		change_wall_int = change_wall * 60 / (wall_inside_mass * constants.ext_wall_ext_heat_capacity)
+		change_wall_int = change_wall * 60 / (wall_inside_mass * constants.ext_wall_int_heat_capacity)
 
 		change_roof_room = change_roof * 60 / (room.get_volume() * constants.air_density * constants.air_heat_capacity)
-		change_roof_int = change_roof * 60 / (roof_inside_mass * constants.ext_roof_ext_heat_capacity)
+		change_roof_int = change_roof * 60 / (roof_inside_mass * constants.ext_roof_int_heat_capacity)
 
 		# print("f", change_wall, change_roof)
 		room.add_air_temp(change_wall_room + change_roof_room)
@@ -363,6 +365,9 @@ class House:
 					self.calc_conduction_between_rooms(room0, room1, wall_area)
 					room0.calc_int_convection_to_room(wall[1])
 					room1.calc_int_convection_to_room(wall[1])
+
+		print(self)
+
 
 	def __repr__(self):
 		return str(self.__dict__)

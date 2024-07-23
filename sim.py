@@ -98,7 +98,7 @@ if __name__ == "__main__":
 	ax2.set_ylim([-1.5, 1.5])
 
 	num_setpoints = 1
-	sim_max = 1440 * 3
+	sim_max = 1440
 	# sim_max = 1
 
 	weather_start = random.randrange(0, len(const.OUTSIDE_TEMP) - sim_max)
@@ -113,7 +113,8 @@ if __name__ == "__main__":
 	damper0 = np.zeros(sim_max)
 	damper1 = np.zeros(sim_max)
 	ac_power = np.zeros(sim_max)
-	test = np.zeros(sim_max)
+	int0 = np.zeros(sim_max)
+	int1 = np.zeros(sim_max)
 	outside_temp = np.zeros(sim_max)
 
 	total_dev0 = 0
@@ -133,6 +134,8 @@ if __name__ == "__main__":
 		temp1[i] = room1.get_temp()
 		setp0[i] = room0.get_setpoint()
 		setp1[i] = room1.get_setpoint()
+		int0[i] = house.int_wall_temp[0][0]
+		int1[i] = house.int_wall_temp[0][1]
 		outside_temp[i] = const.OUTSIDE_TEMP[weather_start + i]
 
 		ac_status, dampers = agent(house, const.OUTSIDE_TEMP[weather_start + i])
@@ -157,12 +160,14 @@ if __name__ == "__main__":
 	ax01.plot(xvalues, dev0, color="purple", linewidth=0.5)
 	ax01.plot(xvalues, damper0, color="gray", linewidth=0.2)
 	ax00.plot(xvalues, outside_temp, color="green", linewidth=0.1)
+	ax00.plot(xvalues, int0, color="orange", linewidth=0.1)
 
 	ax10.plot(xvalues, temp1, color="red", linewidth=0.1)
 	ax10.plot(xvalues, setp1, color="blue", linewidth=0.5)
 	ax11.plot(xvalues, dev1, color="purple", linewidth=0.5)
 	ax11.plot(xvalues, damper1, color="gray", linewidth=0.2)
 	ax10.plot(xvalues, outside_temp, color="green", linewidth=0.1)
+	ax01.plot(xvalues, int1, color="orange", linewidth=0.1)
 
 	ax2.plot(xvalues, ac_power, linewidth=0.1)
 
