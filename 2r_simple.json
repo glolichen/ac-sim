@@ -79,8 +79,8 @@
 		}
 	],
 	"constants": {
-		"cooler_btu": 8600,
-		"heater_btu": 9600,
+		"cooler_btu": 7000,
+		"heater_btu": 7800,
 
 		"ext_wall_thick": 0.20,
 		"int_wall_thick": 0.12,
