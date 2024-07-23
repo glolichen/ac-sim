@@ -104,14 +104,14 @@
 		"ext_wall_ext_heat_capacity": 1000,
 		"ext_wall_ext_density": 1300,
 		"ext_wall_int_thick": 0.01,
-		"ext_wall_int_heat_capacity": 837,
+		"ext_wall_int_heat_capacity": 737,
 		"ext_wall_int_density": 801,
 
 		"ext_roof_ext_thick": 0.045,
 		"ext_roof_ext_heat_capacity": 1400,
 		"ext_roof_ext_density": 860,
 		"ext_roof_int_thick": 0.015,
-		"ext_roof_int_heat_capacity": 1960,
+		"ext_roof_int_heat_capacity": 1860,
 		"ext_roof_int_density": 630,
 
 		"int_wall_outside_thick": 0.01,
