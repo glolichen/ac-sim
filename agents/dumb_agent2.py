@@ -31,8 +31,8 @@ def prelim_agent(house: housebuilder.House, room0_temp: float, room0_setp: float
 		else:
 			return (constants.settings.index(-1), [[True, False]])
 	
-	if abs(room0_temp - room0_setp) < constants.epsilon and abs(room1_temp - room1_setp) < constants.epsilon:
-		return (constants.settings.index(0), house.dampers)
+	# if abs(room0_temp - room0_setp) < constants.epsilon and abs(room1_temp - room1_setp) < constants.epsilon:
+	# 	return (constants.settings.index(0), house.dampers)
 
 	return (house.ac_status, house.dampers)
 

@@ -34,10 +34,10 @@ if __name__ == "__main__":
 
 		house = housebuilder.build_house("2r_simple.json")
 
-		import agents.very_dumb_agent
+		import agents.dumb_agent2
 		import agents.pid_agent
 		# agent = agents.pid_agent.agent
-		agent = agents.very_dumb_agent.agent
+		agent = agents.dumb_agent2.agent
 
 		weather_start = random.randrange(0, len(const.OUTSIDE_TEMP) - sim_max)
 
@@ -87,7 +87,7 @@ if __name__ == "__main__":
 		cycles["cycles (damper) (0)"][i] = damper0_cycle
 		cycles["cycles (damper) (1)"][i] = damper1_cycle
 
-		if total_dev0 / sim_max > 2 or total_dev1 / sim_max > 2:
+		if total_dev0 / sim_max > 1.5 or total_dev1 / sim_max > 1.5:
 			print(f"warn: seed {seed_time} dev0 {total_dev0 / sim_max} dev1 {total_dev1 / sim_max}")
 
 		print(f"{' ' * 20}\r{i + 1}/{episode_count}", end="\r", file=sys.stderr)

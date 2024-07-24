@@ -13,9 +13,9 @@ if __name__ == "__main__":
 
 	house = housebuilder.build_house("2r_simple.json")
 
-	import agents.very_dumb_agent
+	import agents.dumb_agent2
 	import agents.pid_agent
-	agent = agents.very_dumb_agent.agent
+	agent = agents.dumb_agent2.agent
 	# agent = agents.pid_agent.agent
 
 	fig = plt.figure()
@@ -71,8 +71,8 @@ if __name__ == "__main__":
 
 	for t in range(sim_max):
 		if t in change_temp:
-			room0.set_setpoint(random.uniform(20, 28))
-			room1.set_setpoint(random.uniform(20, 28))
+			room0.set_setpoint(random.uniform(20, 21))
+			room1.set_setpoint(random.uniform(27, 28))
 
 		temp0[t] = room0.get_temp()
 		temp1[t] = room1.get_temp()
