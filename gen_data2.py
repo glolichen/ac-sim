@@ -35,8 +35,6 @@ if __name__ == "__main__":
 		house = housebuilder.build_house("2r_simple.json")
 
 		import agents.dumb_agent2
-		import agents.pid_agent
-		# agent = agents.pid_agent.agent
 		agent = agents.dumb_agent2.agent
 
 		weather_start = random.randrange(0, len(const.OUTSIDE_TEMP) - sim_max)
@@ -69,7 +67,7 @@ if __name__ == "__main__":
 
 			damper0 = 1 if dampers[0][0] else 0
 			damper1 = 1 if dampers[0][1] else 0
-			ac_power = housebuilder.get_constants().settings[ac_status]
+			ac_power = house.constants.settings[ac_status]
 
 			if damper0 != damper0_prev:
 				damper0_cycle += 1

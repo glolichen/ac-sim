@@ -95,7 +95,7 @@
 		"outside_convection": 22,
 		"inside_convection": 6,
 
-		"settings": [-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1],
+		"settings": [-1, 0, 1],
 
 		"air_density": 1.293,
 		"air_heat_capacity": 718,

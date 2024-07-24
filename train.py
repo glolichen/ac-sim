@@ -191,4 +191,4 @@ for i_episode in range(num_episodes):
 # plt.ioff()
 # plt.savefig("out.png", dpi=3000)
 
-torch.save(policy_net.state_dict(), "subtract_4_3k_random_weather_2.pt")
+torch.save(policy_net.state_dict(), "model.pt")
