@@ -1,9 +1,10 @@
 import housebuilder
 
-KP = 0.3
-KI = 0.001
-KD = 0
-FF = 0
+# 1721765865.6060843
+KP = 1
+KI = 0
+KD = 0.01
+FF = 0.5
 
 constants = housebuilder.get_constants()
 def get_closest_setting(power: float):
@@ -13,6 +14,9 @@ def get_closest_setting(power: float):
 		if error < best_error:
 			best, best_error = i, error
 	return best
+
+def sgn(num: float) -> int:
+	return 0 if num == 0 else 1 if num > 0 else -1
 
 class PIDController:
 	def __init__(self, KP: float, KI: float, KD: float, FF: float):
@@ -25,7 +29,7 @@ class PIDController:
 		I = self.integral * self.KI
 		D = (error - self.old_error) * self.KD if self.old_error is not None else 0
 		self.old_error = error
-		return get_closest_setting(P + I + D + self.FF)
+		return get_closest_setting(P + I + D + sgn(error) * self.FF)
 	
 pid = PIDController(KP, KI, KD, FF)
 

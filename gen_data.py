@@ -1,99 +1,102 @@
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 import numpy as np
-import agents.dumb_agent
 import const
 import random
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import agents.pid_agent
-import gym_environment
+import housebuilder
 import sys
+import time
 
-env = gym_environment.Environment()
+if __name__ == "__main__":
+	fig = plt.figure()
+	spec = gridspec.GridSpec(nrows=1, ncols=2, width_ratios=[2, 3])
 
-action_size = env.action_space.n
-state, _ = env.reset()
-observation_size = len(state)
+	ax0 = fig.add_subplot(spec[0])
+	ax1 = fig.add_subplot(spec[1])
 
-class DQN(nn.Module):
-	def __init__(self, observation_size, action_size):
-		super().__init__()
-		self.fc1 = nn.Linear(observation_size, 16)
-		self.fc2 = nn.Linear(16, 32)
-		self.fc3 = nn.Linear(32, 64)
-		self.fc4 = nn.Linear(64, action_size)
+	episode_count = int(sys.argv[1])
+	sim_max = 1440
+	num_setpoints = 1
 
-	def forward(self, x):
-		x = F.relu(self.fc1(x))
-		x = F.relu(self.fc2(x))
-		x = F.relu(self.fc3(x))
-		return self.fc4(x)
+	deviations = {
+		"deviation (0)": np.zeros(episode_count),
+		"deviation (1)": np.zeros(episode_count),
+	}
+	cycles = {
+		"cycles (ac)": np.zeros(episode_count),
+		"cycles (damper) (0)": np.zeros(episode_count),
+		"cycles (damper) (1)": np.zeros(episode_count),
+	}
 
-policy_net = DQN(observation_size, action_size).to(const.DEVICE)
-policy_net.load_state_dict(torch.load("subtract_4_3k_random_weather_2.pt"))
+	for i in range(episode_count):
+		seed_time = time.time()
+		random.seed(seed_time)
 
-fig, axes = plt.subplots(1, 2)
+		house = housebuilder.build_house("2r_simple.json")
 
-episode_count = int(sys.argv[-1])
-sim_max = 2880
-num_setpoints = 4
+		import agents.very_dumb_agent
+		import agents.pid_agent
+		# agent = agents.pid_agent.agent
+		agent = agents.very_dumb_agent.agent
 
-deviations = {
-	"deviation (dumb)": np.zeros(episode_count),
-	"deviation (rl)": np.zeros(episode_count),
-}
-cycles = {
-	"cycles (dumb)": np.zeros(episode_count),
-	"cycles (rl)": np.zeros(episode_count),
-}
+		weather_start = random.randrange(0, len(const.OUTSIDE_TEMP) - sim_max)
 
-for i in range(episode_count):
-	deviation_sum = 0
-	# weather_start = 0
-	weather_start = random.randrange(0, len(const.OUTSIDE_TEMP) - sim_max)
-	state, _ = env.reset(num_setpoints=num_setpoints, length=sim_max, start_time=weather_start)
-	old_action = 0
-	cycles_num = 0
-	for t in range(sim_max):	
-		power = policy_net(state).max(0).indices.view(1, 1).item()
-		if power != old_action:
-			cycles_num += 1
-		old_action = power
+		total_dev0 = 0
+		total_dev1 = 0
 
-		deviation_sum += abs(env.get_cur_temp() - env.get_setpoint())
-		state, reward, _ = env.step(power)
-	deviations["deviation (rl)"][i] = deviation_sum / sim_max
-	cycles["cycles (rl)"][i] = cycles_num
-	print(f"{i + 1}/{episode_count}", end="\r")
+		damper0_prev = -1
+		damper1_prev = -1
+		ac_prev = 1000
 
-print("             ", end="\r")
+		damper0_cycle = 0
+		damper1_cycle = 0
+		ac_cycle = 0
 
-for i in range(episode_count):
-	deviation_sum = 0
-	# weather_start = 0
-	weather_start = random.randrange(0, len(const.OUTSIDE_TEMP) - sim_max)
-	state, _ = env.reset(num_setpoints=num_setpoints, length=sim_max, start_time=weather_start)
-	old_action = 0
-	cycles_num = 0
-	for t in range(sim_max):	
-		power = agents.dumb_agent.agent(env.get_cur_temp(), const.OUTSIDE_TEMP[weather_start + t], env.get_setpoint(), env._actions[old_action])
-		power = env._actions.index(power)
-		if power != old_action:
-			cycles_num += 1
-		old_action = power
+		change_temp = set([0] + [random.randrange(0, sim_max) for _ in range(num_setpoints - 1)])
 
-		deviation_sum += abs(env.get_cur_temp() - env.get_setpoint())
-		state, reward, _ = env.step(power)
-	deviations["deviation (dumb)"][i] = deviation_sum / sim_max
-	cycles["cycles (dumb)"][i] = cycles_num
-	print(f"{i + 1}/{episode_count}", end="\r")
+		room0: housebuilder.Room = house.get_rooms(0)[0]
+		room1: housebuilder.Room = house.get_rooms(0)[1]
 
-axes[0].boxplot(deviations.values())
-axes[0].set_xticklabels(deviations.keys())
+		for t in range(sim_max):
+			if t in change_temp:
+				room0.set_setpoint(random.uniform(20, 28))
+				room1.set_setpoint(random.uniform(20, 28))
+			ac_status, dampers = agent(house, const.OUTSIDE_TEMP[weather_start + t])
+			house.step(const.OUTSIDE_TEMP[weather_start + t], ac_status, dampers)
 
-axes[1].boxplot(cycles.values())
-axes[1].set_xticklabels(cycles.keys())
+			total_dev0 += abs(room0.get_temp() - room0.get_setpoint())
+			total_dev1 += abs(room1.get_temp() - room1.get_setpoint())
 
-fig.set_size_inches(12.8, 9.6)
-plt.savefig("out.png", dpi=1000)
+			damper0 = 1 if dampers[0][0] else 0
+			damper1 = 1 if dampers[0][1] else 0
+			ac_power = housebuilder.get_constants().settings[ac_status]
+
+			if damper0 != damper0_prev:
+				damper0_cycle += 1
+			if damper1 != damper1_prev:
+				damper1_cycle += 1
+			if ac_power != ac_prev:
+				ac_cycle += 1
+			damper0_prev = damper0
+			damper1_prev = damper1
+			ac_prev = ac_power
+
+		deviations["deviation (0)"][i] = total_dev0 / sim_max
+		deviations["deviation (1)"][i] = total_dev1 / sim_max
+		cycles["cycles (ac)"][i] = ac_cycle
+		cycles["cycles (damper) (0)"][i] = damper0_cycle
+		cycles["cycles (damper) (1)"][i] = damper1_cycle
+
+		if total_dev0 / sim_max > 2 or total_dev1 / sim_max > 2:
+			print(f"warn: seed {seed_time} dev0 {total_dev0 / sim_max} dev1 {total_dev1 / sim_max}")
+
+		print(f"{' ' * 20}\r{i + 1}/{episode_count}", end="\r", file=sys.stderr)
+
+	ax0.boxplot(deviations.values())
+	ax0.set_xticklabels(deviations.keys())
+
+	ax1.boxplot(cycles.values())
+	ax1.set_xticklabels(cycles.keys())
+
+	fig.set_size_inches(12.8, 9.6)
+	plt.savefig("out.png", dpi=500, bbox_inches="tight")

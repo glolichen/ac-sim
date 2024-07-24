@@ -147,7 +147,7 @@ class House:
 		self.height = [0 for _ in range(floors)]
 
 		self.int_wall_temp = self.int_roof_temp = [[] for _ in range(floors)]
-		self.ext_wall_temp = self.ext_roof_temp = random.uniform(20, 28)
+		self.initial_temp = self.ext_wall_temp = self.ext_roof_temp = random.uniform(20, 28)
 
 		self.total_external_perimeter = 0
 		self.total_roof_area = 0
@@ -319,13 +319,13 @@ class House:
 				self.int_wall_temp[i][j] += change
 
 	def step(self, outside_temp: float, ac_status: int, dampers: list):
-		print(self)
+		# print(self)
 
 		self.ac_status = ac_status
 		self.dampers = dampers
 		self.calc_ac_effect(ac_status, dampers)
 		
-		print(self)
+		# print(self)
 
 		self.calc_weather_convection_wall(outside_temp)
 		self.calc_weather_convection_roof(outside_temp)
@@ -344,7 +344,7 @@ class House:
 			for j in range(len(self.rooms[i])):
 				self.rooms[i][j].calc_int_convection_to_wall(self.int_wall_temp[i][j])
 		
-		print(self)
+		# print(self)
 
 		for i in range(len(self.internal_walls)):
 			room_count = len(self.internal_walls[i])
@@ -366,7 +366,7 @@ class House:
 					room0.calc_int_convection_to_room(wall[1])
 					room1.calc_int_convection_to_room(wall[1])
 
-		print(self)
+		# print(self)
 
 
 	def __repr__(self):
