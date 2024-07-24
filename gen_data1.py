@@ -71,5 +71,5 @@ if __name__ == "__main__":
 	ax1.boxplot(cycles.values())
 	ax1.set_xticklabels(cycles.keys())
 
-	fig.set_size_inches(12.8, 4.8)
+	fig.set_size_inches(12.8, 9.6)
 	plt.savefig("out.png", dpi=500, bbox_inches="tight")

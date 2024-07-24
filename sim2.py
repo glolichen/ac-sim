@@ -34,7 +34,7 @@ if __name__ == "__main__":
 	ax2.set_ylim([-1.5, 1.5])
 
 	num_setpoints = 1
-	sim_max = 1440
+	sim_max = 2880
 	# sim_max = 1
 
 	weather_start = random.randrange(0, len(const.OUTSIDE_TEMP) - sim_max)
@@ -71,8 +71,8 @@ if __name__ == "__main__":
 
 	for t in range(sim_max):
 		if t in change_temp:
-			room0.set_setpoint(random.uniform(20, 21))
-			room1.set_setpoint(random.uniform(27, 28))
+			room0.set_setpoint(random.uniform(20, 28))
+			room1.set_setpoint(random.uniform(20, 28))
 
 		temp0[t] = room0.get_temp()
 		temp1[t] = room1.get_temp()

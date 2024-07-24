@@ -23,7 +23,7 @@ if __name__ == "__main__":
 	ax00 = ax0
 	ax01 = ax0.twinx()
 
-	num_setpoints = 5
+	num_setpoints = 1
 	sim_max = 2880
 
 	weather_start = random.randrange(0, len(const.OUTSIDE_TEMP) - sim_max)

@@ -87,9 +87,6 @@ if __name__ == "__main__":
 		cycles["cycles (damper) (0)"][i] = damper0_cycle
 		cycles["cycles (damper) (1)"][i] = damper1_cycle
 
-		if total_dev0 / sim_max > 1.5 or total_dev1 / sim_max > 1.5:
-			print(f"warn: seed {seed_time} dev0 {total_dev0 / sim_max} dev1 {total_dev1 / sim_max}")
-
 		print(f"{' ' * 20}\r{i + 1}/{episode_count}", end="\r", file=sys.stderr)
 
 	ax0.boxplot(deviations.values())
