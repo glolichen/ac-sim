@@ -62,7 +62,7 @@ class Environment(gym.Env):
 
 		return self._get_observations(), self._get_reward()
 
-	def step(self, power: int, dampers: list[list[bool]]):
+	def step(self, power: int, dampers: list):
 		self.house.step(const.OUTSIDE_TEMP[self._weather_start + self._time], power, dampers)
 		reward = self._get_reward()
 		if power != self._prev_ac:

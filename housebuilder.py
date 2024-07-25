@@ -194,7 +194,7 @@ class House:
 	def set_height(self, floor: int, height: float):
 		self.height[floor] = height
 	
-	def get_rooms(self, floor: int) -> list[Room]:
+	def get_rooms(self, floor: int) -> list:
 		return self.rooms[floor]
 	def get_internal_walls(self, floor: int, room: int) -> list:
 		return self.internal_walls[floor][room]
