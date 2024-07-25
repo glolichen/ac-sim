@@ -6,15 +6,57 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import sys
 import time
+import gym_environment
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import argparse
+
+parser = argparse.ArgumentParser(prog="Sim2RL")
+parser.add_argument("-o", "--output")
+parser.add_argument("-m", "--model")
+parser.add_argument("-t", "--time")
+
+class DQN(nn.Module):
+	def __init__(self, observation_size, action_size):
+		super().__init__()
+		# self.fc1 = nn.Linear(observation_size, 128)
+		# self.fc2 = nn.Linear(128, 128)
+		# self.fc3 = nn.Linear(128, action_size)
+		self.fc1 = nn.Linear(observation_size, 16)
+		self.fc2 = nn.Linear(16, 32)
+		self.fc3 = nn.Linear(32, 64)
+		self.fc4 = nn.Linear(64, action_size)
+
+	def forward(self, x):
+		x = F.relu(self.fc1(x))
+		x = F.relu(self.fc2(x))
+		x = F.relu(self.fc3(x))
+		return self.fc4(x)
 
 if __name__ == "__main__":
+	args = parser.parse_args()
+	if args.output == None:
+		args.output = "out.png"
+		print("warn: no output passed, default to out.png")
+	if args.model == None:
+		args.model = "model.pt"
+		print("warn: no model passed, default to model.pt")
+	if args.time == None:
+		args.time = 1440
+		print("warn: no time passed, default to 1440")
+
+	env = gym_environment.Environment("2r_simple.json")
+
+	action_size = env.action_space.n
+	state, _ = env.reset()
+	observation_size = len(state)
+
+	policy_net = DQN(observation_size, action_size).to(const.DEVICE)
+	policy_net.load_state_dict(torch.load(args.model))
+
 	seed_time = time.time() if len(sys.argv) <= 1 else float(sys.argv[-1])
 	random.seed(seed_time)
-
-	house = housebuilder.build_house("2r_simple.json")
-
-	import agents.dumb_agent2
-	agent = agents.dumb_agent2.agent
 
 	fig = plt.figure()
 	spec = gridspec.GridSpec(nrows=3, ncols=1, height_ratios=[2, 2, 1], hspace=0.25)
@@ -32,7 +74,7 @@ if __name__ == "__main__":
 	ax2.set_ylim([-1.5, 1.5])
 
 	num_setpoints = 1
-	sim_max = 2880
+	sim_max = int(args.time)
 	# sim_max = 1
 
 	weather_start = random.randrange(0, len(const.OUTSIDE_TEMP) - sim_max)
@@ -63,36 +105,27 @@ if __name__ == "__main__":
 	damper1_cycle = 0
 	ac_cycle = 0
 
-	change_temp = set([0] + [random.randrange(0, sim_max) for _ in range(num_setpoints - 1)])
+	obs, _ = env.reset(num_setpoints=num_setpoints, length=sim_max, weather_start=weather_start)
 
-	room0: housebuilder.Room = house.get_rooms(0)[0]
-	room1: housebuilder.Room = house.get_rooms(0)[1]
+	# room0: housebuilder.Room = house.get_rooms(0)[0]
+	# room1: housebuilder.Room = house.get_rooms(0)[1]
 
 	for t in range(sim_max):
-		if t in change_temp:
-			room0.set_setpoint(random.uniform(20, 28))
-			room1.set_setpoint(random.uniform(20, 28))
-
-		temp0[t] = room0.get_temp()
-		temp1[t] = room1.get_temp()
-		setp0[t] = room0.get_setpoint()
-		setp1[t] = room1.get_setpoint()
-		int0[t] = house.int_wall_temp[0][0]
-		int1[t] = house.int_wall_temp[0][1]
+		temp0[t], setp0[t], temp1[t], setp1[t], _ = obs
+		action = policy_net(obs).max(0).indices.view(1, 1).item()
+		ac_status, dampers = env.get_action(action)
 		outside_temp[t] = const.OUTSIDE_TEMP[weather_start + t]
+		obs, _, terminated = env.step(ac_status, dampers)
 
-		ac_status, dampers = agent(house, const.OUTSIDE_TEMP[weather_start + t])
-		house.step(const.OUTSIDE_TEMP[weather_start + t], ac_status, dampers)
-
-		total_dev0 += abs(room0.get_temp() - room0.get_setpoint())
-		total_dev1 += abs(room1.get_temp() - room1.get_setpoint())
+		total_dev0 += abs(obs[0] - obs[1]).item()
+		total_dev1 += abs(obs[2] - obs[3]).item()
 		dev0[t] = total_dev0 / (t + 1)
 		dev1[t] = total_dev1 / (t + 1)
 
 		damper0[t] = 1 if dampers[0][0] else 0
 		damper1[t] = 1 if dampers[0][1] else 0
 		damper_xor[t] = 1 if (dampers[0][0] ^ dampers[0][1]) else 0
-		ac_power[t] = house.constants.settings[ac_status]
+		ac_power[t] = env.house.constants.settings[ac_status]
 
 		if damper0[t] != damper0_prev:
 			damper0_cycle += 1
@@ -104,27 +137,22 @@ if __name__ == "__main__":
 		damper1_prev = damper1[t]
 		ac_prev = ac_power[t]
 
-		# test[i] = house.int_wall_temp
-
 	ax00.plot(xvalues, temp0, color="red", linewidth=0.1)
 	ax00.plot(xvalues, setp0, color="blue", linewidth=0.5)
 	ax01.plot(xvalues, dev0, color="purple", linewidth=0.5)
 	ax01.plot(xvalues, damper0, color="gray", linewidth=0.2)
 	ax00.plot(xvalues, outside_temp, color="green", linewidth=0.1)
-	ax00.plot(xvalues, int0, color="orange", linewidth=0.1)
 
 	ax10.plot(xvalues, temp1, color="red", linewidth=0.1)
 	ax10.plot(xvalues, setp1, color="blue", linewidth=0.5)
 	ax11.plot(xvalues, dev1, color="purple", linewidth=0.5)
 	ax11.plot(xvalues, damper1, color="gray", linewidth=0.2)
 	ax10.plot(xvalues, outside_temp, color="green", linewidth=0.1)
-	ax01.plot(xvalues, int1, color="orange", linewidth=0.1)
 
 	ax2.plot(xvalues, ac_power, linewidth=0.1)
-	ax2.plot(xvalues, damper_xor, linewidth=0.1)
 
 	fig.set_size_inches(9.6, 4.8 / 2 * 5)
-	plt.savefig("run.png", dpi=500, bbox_inches="tight")
+	plt.savefig(args.output, dpi=500, bbox_inches="tight")
 
 	print("seed:", seed_time)
 	print("dev0", total_dev0 / sim_max)

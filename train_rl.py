@@ -13,15 +13,21 @@ import torch.nn.functional as F
 import os
 import gym_environment
 import const
+import argparse
 
-env = gym_environment.Environment()
+parser = argparse.ArgumentParser(prog="TrainRL")
+parser.add_argument("episodes")
+parser.add_argument("-o", "--output")
+parser.add_argument("-m", "--model")
+
+env = gym_environment.Environment("2r_simple.json")
 	
-BATCH_SIZE = 128
+BATCH_SIZE = 188
 GAMMA = 0.99
-EPS_START = 1
-EPS_END = 0
-EPS_DECAY = 1000
-TAU = 0.005
+EPS_START = 0.99
+EPS_END = 0.001
+EPS_DECAY = 800
+TAU = 0.001
 LR = 1e-4
 
 # from the pytorch page on dqn
@@ -60,6 +66,13 @@ observation_size = len(state)
 policy_net = DQN(observation_size, action_size).to(const.DEVICE)
 target_net = DQN(observation_size, action_size).to(const.DEVICE)
 target_net.load_state_dict(policy_net.state_dict())
+
+args = parser.parse_args()
+if args.output == None:
+	args.output = "model.pt"
+	print("warn: no output passed, default to model.pt")
+if args.model != None:	
+	policy_net.load_state_dict(torch.load(args.model))
 
 optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
 memory = ReplayMemory(10000)
@@ -115,7 +128,7 @@ def optimize_model():
 	criterion = nn.SmoothL1Loss()
 	loss = criterion(state_action_values, expected_state_action_values.unsqueeze(1))
 
-	print(loss)
+	# print(loss)
 
 	# Optimize the model
 	optimizer.zero_grad()
@@ -131,7 +144,7 @@ term_cols = os.get_terminal_size().columns
 # else:
 # 	num_episodes = 1000
 
-num_episodes = int(sys.argv[-1])
+num_episodes = int(args.episodes)
 
 xvalues = np.arange(1441)
 temps = np.zeros(1441)
@@ -149,7 +162,8 @@ for i_episode in range(num_episodes):
 
 	for t in count():
 		action = select_action(state)
-		observation, reward, terminated = env.step(action.item())
+		ac_status, dampers = env.get_action(action.item())
+		observation, reward, terminated = env.step(ac_status, dampers)
 
 		# temps[t] = env._cur_temp
 		# target[t] = env._target
