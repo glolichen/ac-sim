@@ -1,11 +1,9 @@
-import gymnasium as gym
 import math
 import random
-import matplotlib.pyplot as plt
 from collections import namedtuple, deque
 from itertools import count
 import numpy as np
-import sys
+import signal
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -14,6 +12,7 @@ import os
 import gym_environment
 import const
 import argparse
+import sys
 
 parser = argparse.ArgumentParser(prog="TrainRL")
 parser.add_argument("episodes")
@@ -66,6 +65,12 @@ observation_size = len(state)
 policy_net = DQN(observation_size, action_size).to(const.DEVICE)
 target_net = DQN(observation_size, action_size).to(const.DEVICE)
 target_net.load_state_dict(policy_net.state_dict())
+
+def signal_handler(signal, frame):
+	print("You pressed ctrl+C")
+	torch.save(policy_net.state_dict(), args.output)
+	sys.exit(0)
+signal.signal(signal.SIGINT, signal_handler)
 
 args = parser.parse_args()
 if args.output == None:
@@ -205,4 +210,4 @@ for i_episode in range(num_episodes):
 # plt.ioff()
 # plt.savefig("out.png", dpi=3000)
 
-torch.save(policy_net.state_dict(), "model.pt")
+torch.save(policy_net.state_dict(), args.output)

@@ -16,6 +16,7 @@ parser = argparse.ArgumentParser(prog="Sim2RL")
 parser.add_argument("-o", "--output")
 parser.add_argument("-m", "--model")
 parser.add_argument("-t", "--time")
+parser.add_argument("-s", "--seed")
 
 class DQN(nn.Module):
 	def __init__(self, observation_size, action_size):
@@ -55,7 +56,7 @@ if __name__ == "__main__":
 	policy_net = DQN(observation_size, action_size).to(const.DEVICE)
 	policy_net.load_state_dict(torch.load(args.model))
 
-	seed_time = time.time() if len(sys.argv) <= 1 else float(sys.argv[-1])
+	seed_time = time.time() if args.seed is None else float(args.seed)
 	random.seed(seed_time)
 
 	fig = plt.figure()
