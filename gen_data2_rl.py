@@ -5,34 +5,18 @@ import const
 import random
 import housebuilder
 import sys
+import stable_baselines3
 import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import gym_environment
+import hvac
 import argparse
 
 parser = argparse.ArgumentParser(prog="GenData2RL")
 parser.add_argument("episodes")
 parser.add_argument("-o", "--output")
 parser.add_argument("-m", "--model")
-
-class DQN(nn.Module):
-	def __init__(self, observation_size, action_size):
-		super().__init__()
-		# self.fc1 = nn.Linear(observation_size, 128)
-		# self.fc2 = nn.Linear(128, 128)
-		# self.fc3 = nn.Linear(128, action_size)
-		self.fc1 = nn.Linear(observation_size, 16)
-		self.fc2 = nn.Linear(16, 32)
-		self.fc3 = nn.Linear(32, 64)
-		self.fc4 = nn.Linear(64, action_size)
-
-	def forward(self, x):
-		x = F.relu(self.fc1(x))
-		x = F.relu(self.fc2(x))
-		x = F.relu(self.fc3(x))
-		return self.fc4(x)
 
 if __name__ == "__main__":
 	args = parser.parse_args()
@@ -43,14 +27,7 @@ if __name__ == "__main__":
 		args.model = "model.pt"
 		print("warn: no model passed, default to model.pt")
 
-	env = gym_environment.Environment("2r_simple.json")
-
-	action_size = env.action_space.n
-	state, _ = env.reset()
-	observation_size = len(state)
-
-	policy_net = DQN(observation_size, action_size).to(const.DEVICE)
-	policy_net.load_state_dict(torch.load(args.model))
+	env = hvac.Environment()
 
 	fig = plt.figure()
 	spec = gridspec.GridSpec(nrows=1, ncols=2, width_ratios=[2, 3])
@@ -77,10 +54,6 @@ if __name__ == "__main__":
 		random.seed(seed_time)
 
 		house = housebuilder.build_house("2r_simple.json")
-
-		import agents.dumb_agent2
-		agent = agents.dumb_agent2.agent
-
 		weather_start = random.randrange(0, len(const.OUTSIDE_TEMP) - sim_max)
 
 		total_dev0 = 0
@@ -94,12 +67,14 @@ if __name__ == "__main__":
 		damper1_cycle = 0
 		ac_cycle = 0
 
+		model = stable_baselines3.DQN.load("./logs/dqn/HVAC-v0_4/rl_model_7200000_steps.zip")
+
 		obs, _ = env.reset(num_setpoints=num_setpoints, length=sim_max, weather_start=weather_start)
 
 		for t in range(sim_max):
-			action = policy_net(obs).max(0).indices.view(1, 1).item()
+			action, _states = model.predict(obs, deterministic=True)
 			ac_status, dampers = env.get_action(action)
-			obs, _, terminated = env.step(ac_status, dampers)
+			obs, _, terminated, _, _ = env.step(action)
 
 			total_dev0 += abs(obs[0] - obs[1]).item()
 			total_dev1 += abs(obs[2] - obs[3]).item()

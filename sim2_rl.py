@@ -6,34 +6,18 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import sys
 import time
-import gym_environment
+import hvac
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import argparse
+import stable_baselines3
 
 parser = argparse.ArgumentParser(prog="Sim2RL")
 parser.add_argument("-o", "--output")
 parser.add_argument("-m", "--model")
 parser.add_argument("-t", "--time")
 parser.add_argument("-s", "--seed")
-
-class DQN(nn.Module):
-	def __init__(self, observation_size, action_size):
-		super().__init__()
-		# self.fc1 = nn.Linear(observation_size, 128)
-		# self.fc2 = nn.Linear(128, 128)
-		# self.fc3 = nn.Linear(128, action_size)
-		self.fc1 = nn.Linear(observation_size, 16)
-		self.fc2 = nn.Linear(16, 32)
-		self.fc3 = nn.Linear(32, 64)
-		self.fc4 = nn.Linear(64, action_size)
-
-	def forward(self, x):
-		x = F.relu(self.fc1(x))
-		x = F.relu(self.fc2(x))
-		x = F.relu(self.fc3(x))
-		return self.fc4(x)
 
 if __name__ == "__main__":
 	args = parser.parse_args()
@@ -47,14 +31,16 @@ if __name__ == "__main__":
 		args.time = 1440
 		print("warn: no time passed, default to 1440")
 
-	env = gym_environment.Environment("2r_simple.json")
+	env = hvac.Environment()
 
 	action_size = env.action_space.n
 	state, _ = env.reset()
 	observation_size = len(state)
 
-	policy_net = DQN(observation_size, action_size).to(const.DEVICE)
-	policy_net.load_state_dict(torch.load(args.model))
+	# policy_net = DQN(observation_size, action_size).to(const.DEVICE)
+	# policy_net.load_state_dict(torch.load(args.model))
+
+	model = stable_baselines3.DQN.load("./logs/dqn/HVAC-v0_7/rl_model_1440000_steps.zip")
 
 	seed_time = time.time() if args.seed is None else float(args.seed)
 	random.seed(seed_time)
@@ -112,11 +98,11 @@ if __name__ == "__main__":
 	# room1: housebuilder.Room = house.get_rooms(0)[1]
 
 	for t in range(sim_max):
-		temp0[t], setp0[t], temp1[t], setp1[t], _ = obs
-		action = policy_net(obs).max(0).indices.view(1, 1).item()
+		temp0[t], setp0[t], temp1[t], setp1[t], _, _, _ = obs
+		action, _states = model.predict(obs, deterministic=True)
 		ac_status, dampers = env.get_action(action)
 		outside_temp[t] = const.OUTSIDE_TEMP[weather_start + t]
-		obs, _, terminated = env.step(ac_status, dampers)
+		obs, _, terminated, _, _ = env.step(action)
 
 		total_dev0 += abs(obs[0] - obs[1]).item()
 		total_dev1 += abs(obs[2] - obs[3]).item()
