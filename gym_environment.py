@@ -2,32 +2,31 @@ import numpy as np
 import random
 import gymnasium as gym
 import housebuilder
-import torch
 import const
-import math
+from typing import Optional, Dict, Any
 
 class Environment(gym.Env):
 	def __init__(self):
-		self.observation_space = gym.spaces.Box(-10, 400, shape=(7,), dtype=float)
+		self.observation_space = gym.spaces.Box(-100, 4000, shape=(7,), dtype=float)
 		self.actions = [
-			(0, [[False, False]]),
-			(0, [[False, True]]),
-			(0, [[True, False]]),
-			(0, [[True, True]]),
-			(1, [[False, False]]),
-			(1, [[False, True]]),
-			(1, [[True, False]]),
-			(1, [[True, True]]),
-			(2, [[False, False]]),
-			(2, [[False, True]]),
-			(2, [[True, False]]),
-			(2, [[True, True]]),
+			(-1, [[False, False]]),
+			(-1, [[False, True]]),
+			(-1, [[True, False]]),
+			(-1, [[True, True]]),
+			( 0, [[False, False]]),
+			( 0, [[False, True]]),
+			( 0, [[True, False]]),
+			( 0, [[True, True]]),
+			( 1, [[False, False]]),
+			( 1, [[False, True]]),
+			( 1, [[True, False]]),
+			( 1, [[True, True]]),
 		]
 		self.action_space = gym.spaces.Discrete(len(self.actions))
 		self._house_cfg = "2r_simple.json"
 
 	def _get_observations(self):
-		return torch.tensor([
+		return np.array([
 			self.house.get_rooms(0)[0].get_temp(),
 			self.house.get_rooms(0)[0].get_setpoint(),
 			self.house.get_rooms(0)[1].get_temp(),
@@ -53,7 +52,7 @@ class Environment(gym.Env):
 		reward -= abs(self.house.get_rooms(0)[1].get_temp() - self.house.get_rooms(0)[1].get_setpoint())
 		return reward
 	
-	def reset(self, seed=None, num_setpoints=1, length=1440, weather_start=None):
+	def reset(self, seed=None, num_setpoints=1, length=1440, weather_start=None, options: Optional[Dict[str, Any]] = None):
 		super().reset()
 
 		self.house = housebuilder.build_house(self._house_cfg)
@@ -77,6 +76,7 @@ class Environment(gym.Env):
 
 	def step(self, setting: int):
 		power, dampers = self.actions[setting]
+		# print(power, dampers)
 		self.house.step(const.OUTSIDE_TEMP[self._weather_start + self._time], power, dampers)
 
 		reward = self._get_reward()

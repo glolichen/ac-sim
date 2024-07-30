@@ -153,7 +153,7 @@ class House:
 		self.total_external_perimeter = 0
 		self.total_roof_area = 0
 
-		self.ac_status = constants.settings.index(0)
+		self.ac_status = 0
 
 		self.constants = constants
 
@@ -269,7 +269,7 @@ class House:
 		room1.set_int_wall_temp(room1.get_int_wall_temp() + change)
 	
 	def calc_ac_effect(self, ac_status: int, dampers: list):
-		ac_mode = self.constants.settings[ac_status]
+		ac_mode = ac_status
 		if ac_mode < 0:
 			energy_transfer = self.constants.cooler_btu / 3.41 * ac_mode
 		elif ac_mode > 0:
@@ -321,7 +321,7 @@ class House:
 				change = change * 60 / (wall_outside_mass * self.constants.int_wall_outside_heat_capacity)
 				self.int_wall_temp[i][j] += change
 
-	def step(self, outside_temp: float, ac_status: int, dampers: list):
+	def step(self, outside_temp: float, ac_status: float, dampers: list):
 		# print(self)
 
 		self.ac_status = ac_status

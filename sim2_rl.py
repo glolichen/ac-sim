@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import sys
 import time
-import hvac
+import gym_environment
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -31,7 +31,7 @@ if __name__ == "__main__":
 		args.time = 1440
 		print("warn: no time passed, default to 1440")
 
-	env = hvac.Environment()
+	env = gym_environment.Environment()
 
 	action_size = env.action_space.n
 	state, _ = env.reset()
@@ -40,7 +40,8 @@ if __name__ == "__main__":
 	# policy_net = DQN(observation_size, action_size).to(const.DEVICE)
 	# policy_net.load_state_dict(torch.load(args.model))
 
-	model = stable_baselines3.DQN.load("./logs/dqn/HVAC-v0_7/rl_model_1440000_steps.zip")
+	model = stable_baselines3.DQN.load("imitation.zip")
+	# model = stable_baselines3.DQN.load("./logs/dqn/HVAC-v0_7/rl_model_1440000_steps.zip")
 
 	seed_time = time.time() if args.seed is None else float(args.seed)
 	random.seed(seed_time)
