@@ -40,7 +40,7 @@ if __name__ == "__main__":
 	# policy_net = DQN(observation_size, action_size).to(const.DEVICE)
 	# policy_net.load_state_dict(torch.load(args.model))
 
-	model = stable_baselines3.DQN.load("imitation.zip")
+	model = stable_baselines3.DQN.load("dqn_house")
 	# model = stable_baselines3.DQN.load("./logs/dqn/HVAC-v0_7/rl_model_1440000_steps.zip")
 
 	seed_time = time.time() if args.seed is None else float(args.seed)
@@ -99,7 +99,7 @@ if __name__ == "__main__":
 	# room1: housebuilder.Room = house.get_rooms(0)[1]
 
 	for t in range(sim_max):
-		temp0[t], setp0[t], temp1[t], setp1[t], _, _, _ = obs
+		temp0[t], setp0[t], temp1[t], setp1[t], _, _, _, _, _, _, _ = obs
 		action, _states = model.predict(obs, deterministic=True)
 		ac_status, dampers = env.get_action(action)
 		outside_temp[t] = const.OUTSIDE_TEMP[weather_start + t]

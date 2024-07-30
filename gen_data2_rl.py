@@ -10,7 +10,7 @@ import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import hvac
+import gym_environment
 import argparse
 
 parser = argparse.ArgumentParser(prog="GenData2RL")
@@ -27,7 +27,7 @@ if __name__ == "__main__":
 		args.model = "model.pt"
 		print("warn: no model passed, default to model.pt")
 
-	env = hvac.Environment()
+	env = gym_environment.Environment()
 
 	fig = plt.figure()
 	spec = gridspec.GridSpec(nrows=1, ncols=2, width_ratios=[2, 3])
@@ -67,7 +67,7 @@ if __name__ == "__main__":
 		damper1_cycle = 0
 		ac_cycle = 0
 
-		model = stable_baselines3.DQN.load("./logs/dqn/HVAC-v0_4/rl_model_7200000_steps.zip")
+		model = stable_baselines3.DQN.load("dqn_house.zip")
 
 		obs, _ = env.reset(num_setpoints=num_setpoints, length=sim_max, weather_start=weather_start)
 
