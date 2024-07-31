@@ -99,6 +99,8 @@ class Environment(gym.Env):
 		# self._prev_damper0 = dampers[0][0]
 		# self._prev_damper1 = dampers[0][1]
 
+		# print("calculated reward", reward)
+
 		terminated = self._time > self._length
 		self._time += 1
 

@@ -1,4 +1,5 @@
 import gymnasium as gym
+import imitation.algorithms.dagger
 import gym_environment
 
 import imitation
@@ -30,8 +31,8 @@ import stable_baselines3.ppo
 import numpy as np
 from typing import Union, Dict
 
-DATASET_SIZE = 20_000
-TRAIN_TIMESTEPS = 32_000_000
+DATASET_SIZE = 200
+TRAIN_TIMESTEPS = 3000
 
 gym.register(
 	id="HVAC-v0",
@@ -98,58 +99,86 @@ class DumbPolicy(imitation.policies.base.NonTrainablePolicy):
 		
 		# print(room0_temp, room0_setp, room1_temp, room1_setp, outside_temp, ac_status, dampers)
 		return env.actions.index((ac_status, dampers))
-	
+
+import tempfile	
 stupid = DumbPolicy(env.observation_space, env.action_space)
-rng = np.random.default_rng()
-rollouts = imitation.data.rollout.rollout(
-	stupid,
-	venv,
-	imitation.data.rollout.make_sample_until(min_timesteps=None, min_episodes=DATASET_SIZE),
-	rng=rng,
-	verbose=True
-)
-transitions = imitation.data.rollout.flatten_trajectories(rollouts)
 
-print("Finished generating trajectories")
-
-learner = stable_baselines3.PPO(
-  env=env,
-	policy=stable_baselines3.ppo.MlpPolicy,
-	batch_size=64,
-	ent_coef=0.0,
-	learning_rate=0.0005,
-	gamma=0.95,
-	clip_range=0.1,
-	vf_coef=0.1,
-	n_epochs=5
-)
-# learner = stable_baselines3.PPO.load("imitation_in.zip")
-
-reward_net = imitation.rewards.reward_nets.BasicShapedRewardNet(
+rng = np.random.default_rng(0)
+bc_trainer = imitation.algorithms.bc.BC(
 	observation_space=env.observation_space,
 	action_space=env.action_space,
-	normalize_input_layer=imitation.util.networks.RunningNorm,
+	rng=rng,
 )
-airl_trainer = imitation.algorithms.adversarial.airl.AIRL(
-	demonstrations=rollouts,
-	demo_batch_size=2048,
-	gen_replay_buffer_capacity=512,
-	n_disc_updates_per_round=16,
-	venv=venv,
-	gen_algo=learner,
-	reward_net=reward_net,
-)
+with tempfile.TemporaryDirectory(prefix="dagger_example_") as tmpdir:
+	print(tmpdir)
+	dagger_trainer = imitation.algorithms.dagger.SimpleDAggerTrainer(
+		venv=venv,
+		scratch_dir=tmpdir,
+		expert_policy=stupid,
+		bc_trainer=bc_trainer,
+		rng=rng,
+	)
+	before_reward, _ = stable_baselines3.common.evaluation.evaluate_policy(dagger_trainer.policy, env, 100)
+	dagger_trainer.train(1_000_000)
 
-learner_rewards_before_training, _ = stable_baselines3.common.evaluation.evaluate_policy(
-	learner, env, 100, return_episode_rewards=True,
-)
+after_reward, _ = stable_baselines3.common.evaluation.evaluate_policy(dagger_trainer.policy, env, 100)
+stupid_reward, _ = stable_baselines3.common.evaluation.evaluate_policy(stupid, env, 100)
+print("before:", np.mean(before_reward))
+print("after:", np.mean(after_reward))
+print("expert:", np.mean(stupid_reward))
 
-airl_trainer.train(TRAIN_TIMESTEPS)
+dagger_trainer.policy.save("dagger_out.zip")
 
-learner_rewards_after_training, _ = stable_baselines3.common.evaluation.evaluate_policy(
-	learner, env, 100, return_episode_rewards=True,
-)
-print("before", np.mean(learner_rewards_before_training))
-print("after", np.mean(learner_rewards_after_training))
+# rng = np.random.default_rng()
+# rollouts = imitation.data.rollout.rollout(
+# 	stupid,
+# 	venv,
+# 	imitation.data.rollout.make_sample_until(min_timesteps=None, min_episodes=DATASET_SIZE),
+# 	rng=rng,
+# 	verbose=True
+# )
+# transitions = imitation.data.rollout.flatten_trajectories(rollouts)
 
-learner.save("imitation_out.zip")
+# print("Finished generating trajectories")
+
+# learner = stable_baselines3.PPO(
+#   env=env,
+# 	policy=stable_baselines3.ppo.MlpPolicy,
+# 	batch_size=64,
+# 	ent_coef=0.0,
+# 	learning_rate=0.0005,
+# 	gamma=0.95,
+# 	clip_range=0.1,
+# 	vf_coef=0.1,
+# 	n_epochs=5
+# )
+# # learner = stable_baselines3.PPO.load("imitation_in.zip")
+
+# reward_net = imitation.rewards.reward_nets.BasicShapedRewardNet(
+# 	observation_space=env.observation_space,
+# 	action_space=env.action_space,
+# 	normalize_input_layer=imitation.util.networks.RunningNorm,
+# )
+# airl_trainer = imitation.algorithms.adversarial.airl.AIRL(
+# 	demonstrations=rollouts,
+# 	demo_batch_size=2048,
+# 	gen_replay_buffer_capacity=512,
+# 	n_disc_updates_per_round=16,
+# 	venv=venv,
+# 	gen_algo=learner,
+# 	reward_net=reward_net,
+# )
+
+# learner_rewards_before_training, _ = stable_baselines3.common.evaluation.evaluate_policy(
+# 	learner, env, 100, return_episode_rewards=True,
+# )
+
+# airl_trainer.train(TRAIN_TIMESTEPS)
+
+# learner_rewards_after_training, _ = stable_baselines3.common.evaluation.evaluate_policy(
+# 	learner, env, 100, return_episode_rewards=True,
+# )
+# print("before", np.mean(learner_rewards_before_training))
+# print("after", np.mean(learner_rewards_after_training))
+
+# learner.save("imitation_out.zip")
