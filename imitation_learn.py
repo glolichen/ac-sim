@@ -30,8 +30,8 @@ import stable_baselines3.ppo
 import numpy as np
 from typing import Union, Dict
 
-DATASET_SIZE = 20
-TRAIN_TIMESTEPS = 20_000
+DATASET_SIZE = 20_000
+TRAIN_TIMESTEPS = 32_000_000
 
 gym.register(
 	id="HVAC-v0",
@@ -112,18 +112,18 @@ transitions = imitation.data.rollout.flatten_trajectories(rollouts)
 
 print("Finished generating trajectories")
 
-# learner = stable_baselines3.PPO(
-# 	env=env,
-# 	policy=stable_baselines3.ppo.MlpPolicy,
-# 	batch_size=64,
-# 	ent_coef=0.0,
-# 	learning_rate=0.0005,
-# 	gamma=0.95,
-# 	clip_range=0.1,
-# 	vf_coef=0.1,
-# 	n_epochs=5
-# )
-learner = stable_baselines3.PPO.load("imitation_in.zip")
+learner = stable_baselines3.PPO(
+  env=env,
+	policy=stable_baselines3.ppo.MlpPolicy,
+	batch_size=64,
+	ent_coef=0.0,
+	learning_rate=0.0005,
+	gamma=0.95,
+	clip_range=0.1,
+	vf_coef=0.1,
+	n_epochs=5
+)
+# learner = stable_baselines3.PPO.load("imitation_in.zip")
 
 reward_net = imitation.rewards.reward_nets.BasicShapedRewardNet(
 	observation_space=env.observation_space,
