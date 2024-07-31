@@ -99,7 +99,7 @@ if __name__ == "__main__":
 	# room1: housebuilder.Room = house.get_rooms(0)[1]
 
 	for t in range(sim_max):
-		temp0[t], setp0[t], temp1[t], setp1[t], _, _, _ = obs
+		temp0[t], setp0[t], temp1[t], setp1[t], _, _, _, _, _, _, _ = obs
 		action, _states = model.predict(obs, deterministic=True)
 		ac_status, dampers = env.get_action(action)
 		outside_temp[t] = const.OUTSIDE_TEMP[weather_start + t]

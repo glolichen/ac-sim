@@ -18,16 +18,15 @@ if __name__ == "__main__":
 	if args.output.endswith(".zip"):
 		args.output = args.output.rstrip(".zip")
 
-	env = gym_environment.Environment("2r_simple.json")
-	model = stable_baselines3.A2C("MlpPolicy", env, verbose=2,
-								learning_rate = 0.001,
-								n_steps = 10,
-								gamma = 0.98,
-								gae_lambda = 0.95,
-								ent_coef = 0.01,
-								vf_coef = 0.4,
-								max_grad_norm = 0.7,
-								rms_prop_eps = 0.0001
+	env = gym_environment.Environment()
+	model = stable_baselines3.DQN("MlpPolicy", env, verbose=1,
+								learning_rate = 1e-4,
+								gamma = 0.99,
+								tau = 0.001,
+								exploration_initial_eps = 0.99,
+								exploration_final_eps = 0.001,
+								exploration_fraction = 0.1,
+								batch_size = 188
 
 								# learning_rate = 0.00,
 								# n_steps = 5,
@@ -38,5 +37,5 @@ if __name__ == "__main__":
 								# max_grad_norm = 0.5,
 								# rms_prop_eps = 0.00001
 	)
-	model.learn(total_timesteps=int(args.timesteps) * 1440, log_interval=1440)
-	model.save("ppo_house")
+	model.learn(total_timesteps=int(args.timesteps) * 1440, log_interval=10)
+	model.save("dqn_house")

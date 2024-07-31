@@ -1,0 +1,1 @@
+python -m rl_zoo3.train --algo dqn --env HVAC-v0 -n 720000 -optimize --n-trials 60 --n-jobs 2 --sampler random --pruner median

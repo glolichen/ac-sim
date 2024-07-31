@@ -1,0 +1,2 @@
+,number,value,datetime_start,datetime_complete,duration,params_batch_size,params_buffer_size,params_exploration_final_eps,params_exploration_fraction,params_gamma,params_learning_rate,params_learning_starts,params_net_arch,params_subsample_steps,params_target_update_interval,params_train_freq,state
+0,0,-15080.710898199997,2024-07-30 17:43:43.275694,2024-07-30 17:59:27.461670,0 days 00:15:44.185976,16,1000000,0.02076371058600275,0.13671529388582238,0.98,0.09151118213182893,10000,medium,2,20000,1000,COMPLETE
