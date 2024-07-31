@@ -24,10 +24,9 @@ if __name__ == "__main__":
 	seed_time = time.time() if len(sys.argv) <= 1 else float(sys.argv[-1])
 	random.seed(seed_time)
 
-	house = housebuilder.build_house("2r_simple.json")
+	house = housebuilder.build_house("2r_different.json")
 
-	import agents.dumb_agent2
-	agent = agents.dumb_agent2.agent
+	from agents.very_dumb_agent2 import agent
 
 	fig = plt.figure()
 	spec = gridspec.GridSpec(nrows=3, ncols=1, height_ratios=[2, 2, 1], hspace=0.25)
@@ -134,7 +133,6 @@ if __name__ == "__main__":
 	ax01.plot(xvalues, int1, color="orange", linewidth=0.1)
 
 	ax2.plot(xvalues, ac_power, linewidth=0.1)
-	ax2.plot(xvalues, damper_xor, linewidth=0.1)
 
 	fig.set_size_inches(9.6, 4.8 / 2 * 5)
 	plt.savefig(args.output, dpi=500, bbox_inches="tight")
