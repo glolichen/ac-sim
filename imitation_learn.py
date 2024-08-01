@@ -44,7 +44,7 @@ env = gym.make("HVAC-v0")
 venv = imitation.util.util.make_vec_env(
 	"HVAC-v0",
 	rng=np.random.default_rng(),
-	n_envs=1,
+	n_envs=4,
 	post_wrappers=[lambda env, _: imitation.data.wrappers.RolloutInfoWrapper(env)],
 )
 
@@ -52,7 +52,7 @@ class DumbPolicy(imitation.policies.base.NonTrainablePolicy):
 	def _choose_action(self, obs: Union[np.ndarray, Dict[str, np.ndarray]],) -> int:
 		epsilon = 0.9
 		
-		room0_temp, room0_setp, room1_temp, room1_setp, outside_temp, prev_setting, _ = obs
+		room0_temp, room0_setp, room1_temp, room1_setp, outside_temp, prev_setting, _, _, _, _, _ = obs
 		prev_ac_status, prev_dampers = env.actions[int(prev_setting)]
 
 		if room0_temp > room0_setp + epsilon and room1_temp > room1_setp:
@@ -119,7 +119,7 @@ with tempfile.TemporaryDirectory(prefix="dagger_example_") as tmpdir:
 		rng=rng,
 	)
 	before_reward, _ = stable_baselines3.common.evaluation.evaluate_policy(dagger_trainer.policy, env, 100)
-	dagger_trainer.train(1_000_000)
+	dagger_trainer.train(1_000)
 
 after_reward, _ = stable_baselines3.common.evaluation.evaluate_policy(dagger_trainer.policy, env, 100)
 stupid_reward, _ = stable_baselines3.common.evaluation.evaluate_policy(stupid, env, 100)

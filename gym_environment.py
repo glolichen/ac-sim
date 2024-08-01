@@ -10,18 +10,18 @@ class Environment(gym.Env):
 	def __init__(self):
 		self.observation_space = gym.spaces.Box(-10, 400, shape=(11,), dtype=float)
 		self.actions = [
-			(0, [[False, False]]),
-			(0, [[False, True]]),
-			(0, [[True, False]]),
-			(0, [[True, True]]),
-			(1, [[False, False]]),
-			(1, [[False, True]]),
-			(1, [[True, False]]),
-			(1, [[True, True]]),
-			(2, [[False, False]]),
-			(2, [[False, True]]),
-			(2, [[True, False]]),
-			(2, [[True, True]]),
+			(-1, [[False, False]]),
+			(-1, [[False, True]]),
+			(-1, [[True, False]]),
+			(-1, [[True, True]]),
+			(0 , [[False, False]]),
+			(0 , [[False, True]]),
+			(0 , [[True, False]]),
+			(0 , [[True, True]]),
+			(1 , [[False, False]]),
+			(1 , [[False, True]]),
+			(1 , [[True, False]]),
+			(1 , [[True, True]]),
 		]
 		self.action_space = gym.spaces.Discrete(len(self.actions))
 		self._house_cfg = "2r_simple.json"
@@ -51,7 +51,7 @@ class Environment(gym.Env):
 		reward -= abs(self.house.get_rooms(0)[1].get_temp() - self.house.get_rooms(0)[1].get_setpoint())
 		return reward
 	
-	def reset(self, seed=None, num_setpoints=1, length=1440, weather_start=None):
+	def reset(self, seed=None, num_setpoints=1, length=1440, weather_start=None, options=None):
 		super().reset()
 
 		self.house = housebuilder.build_house(self._house_cfg)
