@@ -40,7 +40,7 @@ if __name__ == "__main__":
 	# policy_net = DQN(observation_size, action_size).to(const.DEVICE)
 	# policy_net.load_state_dict(torch.load(args.model))
 
-	model = stable_baselines3.PPO.load(args.model)
+	model = stable_baselines3.DQN.load(args.model)
 	# model = stable_baselines3.DQN.load("./logs/dqn/HVAC-v0_7/rl_model_1440000_steps.zip")
 
 	seed_time = time.time() if args.seed is None else float(args.seed)

@@ -100,7 +100,7 @@ class DumbPolicy(imitation.policies.base.NonTrainablePolicy):
 		# print(room0_temp, room0_setp, room1_temp, room1_setp, outside_temp, ac_status, dampers)
 		return env.actions.index((ac_status, dampers))
 
-import tempfile	
+import tempfile
 stupid = DumbPolicy(env.observation_space, env.action_space)
 
 rng = np.random.default_rng(0)
@@ -108,6 +108,7 @@ bc_trainer = imitation.algorithms.bc.BC(
 	observation_space=env.observation_space,
 	action_space=env.action_space,
 	rng=rng,
+	device="cuda"
 )
 with tempfile.TemporaryDirectory(prefix="dagger_example_") as tmpdir:
 	print(tmpdir)

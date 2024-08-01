@@ -19,15 +19,17 @@ if __name__ == "__main__":
 		args.output = args.output.rstrip(".zip")
 
 	env = gym_environment.Environment()
+	# venv = stable_baselines3.v
 	model = stable_baselines3.DQN("MlpPolicy", env, verbose=1,
-								learning_rate = 1e-4,
-								gamma = 0.99,
-								tau = 0.001,
-								exploration_initial_eps = 0.99,
-								exploration_final_eps = 0.001,
-								exploration_fraction = 0.1,
-								batch_size = 188
-
+								gamma=0.9999,
+								learning_rate=0.0009145216306356975,
+								batch_size=32,
+								buffer_size=1000000,
+								exploration_final_eps=0.12583623683757106,
+								exploration_fraction=0.47604767252903846,
+								target_update_interval=1000,
+								learning_starts=20000,
+								train_freq=16
 								# learning_rate = 0.00,
 								# n_steps = 5,
 								# gamma = 0.99,
@@ -38,4 +40,4 @@ if __name__ == "__main__":
 								# rms_prop_eps = 0.00001
 	)
 	model.learn(total_timesteps=int(args.timesteps) * 1440, log_interval=10)
-	model.save("dqn_house")
+	model.save(args.output)

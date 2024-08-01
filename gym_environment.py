@@ -77,13 +77,13 @@ class Environment(gym.Env):
 		reward = self._get_reward()
 		if power != self._prev_ac:
 			self._prev_ac = power
-			reward -= 0.3
+			reward -= 0.025
 		if dampers[0][0] != self._prev_damper0:
 			self._prev_damper0 = dampers[0][0]
-			reward -= 0.25
+			reward -= 0.0125
 		if dampers[0][1] != self._prev_damper1:
 			self._prev_damper1 = dampers[0][1]
-			reward -= 0.25
+			reward -= 0.0125
 		terminated = self._time > self._length
 		self._time += 1
 		return self._get_observations(), reward, terminated, False, {}
