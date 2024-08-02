@@ -12,7 +12,9 @@ parser = argparse.ArgumentParser(prog="Sim2Dumb")
 parser.add_argument("-o", "--output")
 parser.add_argument("-t", "--time")
 
-if __name__ == "__main__":
+num = 0
+def main():
+	global num
 	args = parser.parse_args()
 	if args.output == None:
 		args.output = "out.png"
@@ -24,16 +26,17 @@ if __name__ == "__main__":
 	seed_time = time.time() if len(sys.argv) <= 1 else float(sys.argv[-1])
 	random.seed(seed_time)
 
-	house = housebuilder.build_house("2r_different.json")
+	house = housebuilder.build_house("3r_test.json")
 
-	from agents.very_dumb_agent2 import agent
+	from agents.generalized_dumb_agent import agent
 
 	fig = plt.figure()
-	spec = gridspec.GridSpec(nrows=3, ncols=1, height_ratios=[2, 2, 1], hspace=0.25)
+	spec = gridspec.GridSpec(nrows=4, ncols=1, height_ratios=[2, 2, 2, 1], hspace=0.25)
 
 	ax0 = fig.add_subplot(spec[0])
 	ax1 = fig.add_subplot(spec[1], sharex=ax0, sharey=ax0)
 	ax2 = fig.add_subplot(spec[2], sharex=ax1)
+	# ax3 = fig.add_subplot(spec[3], sharex=ax1)
 
 	ax00 = ax0
 	ax10 = ax1
@@ -135,11 +138,15 @@ if __name__ == "__main__":
 	ax2.plot(xvalues, ac_power, linewidth=0.1)
 
 	fig.set_size_inches(9.6, 4.8 / 2 * 5)
-	plt.savefig(args.output, dpi=500, bbox_inches="tight")
+	plt.savefig(f"images/out{num}.png", dpi=500, bbox_inches="tight")
+	num += 1
 
-	print("seed:", seed_time)
-	print("dev0", total_dev0 / sim_max)
-	print("dev1", total_dev1 / sim_max)
-	print("damper0 cycles:", damper0_cycle)
-	print("damper1 cycles:", damper1_cycle)
-	print("ac cycles:", ac_cycle)
+	# print("seed:", seed_time)
+	# print("dev0", total_dev0 / sim_max)
+	# print("dev1", total_dev1 / sim_max)
+	# print("damper0 cycles:", damper0_cycle)
+	# print("damper1 cycles:", damper1_cycle)
+	# print("ac cycles:", ac_cycle)
+
+if __name__ == "__main__":
+	for i in range(200):main()
