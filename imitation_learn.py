@@ -31,7 +31,7 @@ import stable_baselines3.ppo
 import numpy as np
 from typing import Union, Dict
 
-TIMESTEPS = 100_000
+TIMESTEPS = 200_000
 
 gym.register(
 	id="HVAC-v0",
