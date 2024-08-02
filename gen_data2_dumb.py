@@ -44,9 +44,8 @@ if __name__ == "__main__":
 
 		house = housebuilder.build_house("2r_simple.json")
 
-		import agents.dumb_agent2
-		agent = agents.dumb_agent2.agent
-
+		from agents.generalized_dumb_agent import agent
+		
 		weather_start = random.randrange(0, len(const.OUTSIDE_TEMP) - sim_max)
 
 		total_dev0 = 0
