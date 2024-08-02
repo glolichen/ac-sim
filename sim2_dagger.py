@@ -15,6 +15,7 @@ import stable_baselines3
 import imitation
 import imitation.policies
 import imitation.policies.base
+from typing import Union, Dict
 
 parser = argparse.ArgumentParser(prog="Sim2RL")
 parser.add_argument("-o", "--output")

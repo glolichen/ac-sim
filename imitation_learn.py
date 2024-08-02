@@ -51,8 +51,8 @@ class DumbPolicy(imitation.policies.base.NonTrainablePolicy):
 	def _choose_action(self, obs: Union[np.ndarray, Dict[str, np.ndarray]],) -> int:
 		epsilon = 0.9
 		
-		room0_temp, room0_setp, room1_temp, room1_setp, outside_temp, prev_setting, _, _, _, _, _ = obs
-		prev_ac_status, prev_dampers = env.actions[int(prev_setting)]
+		room0_temp, room0_setp, room1_temp, room1_setp, outside_temp, _, prev_ac_status, _, prev_damper0, _, prev_damper1 = obs
+		prev_dampers = [[bool(prev_damper0), bool(prev_damper1)]]
 
 		if room0_temp > room0_setp + epsilon and room1_temp > room1_setp:
 			ac_status, dampers = (-1, [[False, False]])
@@ -108,7 +108,7 @@ bc_trainer = imitation.algorithms.bc.BC(
 	action_space=env.action_space,
 	rng=rng,
 	device="cuda",
-	policy=imitation.policies.base.FeedForward32Policy.load("dagger_out2.zip")
+	# policy=imitation.policies.base.FeedForward32Policy.load("dagger_out2.zip")
 )
 
 with tempfile.TemporaryDirectory(prefix="dagger_example_") as tmpdir:
@@ -129,7 +129,7 @@ print("before:", np.mean(before_reward))
 print("after:", np.mean(after_reward))
 print("expert:", np.mean(stupid_reward))
 
-dagger_trainer.policy.save("dagger_out3.zip")
+dagger_trainer.policy.save("dagger_out.zip")
 
 # rng = np.random.default_rng()
 # rollouts = imitation.data.rollout.rollout(

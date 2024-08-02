@@ -2,9 +2,7 @@ import numpy as np
 import random
 import gymnasium as gym
 import housebuilder
-import torch
 import const
-import math
 
 class Environment(gym.Env):
 	def __init__(self):
@@ -27,7 +25,7 @@ class Environment(gym.Env):
 		self._house_cfg = "2r_simple.json"
 
 	def _get_observations(self):
-		return torch.tensor([
+		return np.array([
 			self.house.get_rooms(0)[0].get_temp(),
 			self.house.get_rooms(0)[0].get_setpoint(),
 			self.house.get_rooms(0)[1].get_temp(),
@@ -60,11 +58,11 @@ class Environment(gym.Env):
 		self._weather_start = random.randrange(0, len(const.OUTSIDE_TEMP) - length) if weather_start is None else weather_start
 		self._change_setpoint = set([random.randrange(0, length) for _ in range(num_setpoints - 1)])
 		self._ac_last_change = 0
-		self._prev_ac = 100
+		self._prev_ac = 0
 		self._damper0_last_change = 0
-		self._prev_damper0 = -1
+		self._prev_damper0 = 0
 		self._damper1_last_change = 0
-		self._prev_damper1 = -1
+		self._prev_damper1 = 0
 
 		self.house.get_rooms(0)[0].set_setpoint(random.uniform(20, 28))
 		self.house.get_rooms(0)[1].set_setpoint(random.uniform(20, 28))

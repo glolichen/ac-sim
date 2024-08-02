@@ -15,11 +15,68 @@ import argparse
 import imitation
 import imitation.policies
 import imitation.policies.base
+from typing import Union, Dict
 
 parser = argparse.ArgumentParser(prog="GenData2RL")
 parser.add_argument("episodes")
 parser.add_argument("-o", "--output")
 parser.add_argument("-m", "--model")
+
+class DumbPolicy(imitation.policies.base.NonTrainablePolicy):
+	def _choose_action(self, obs: Union[np.ndarray, Dict[str, np.ndarray]],) -> int:
+		epsilon = 0.9
+		
+		room0_temp, room0_setp, room1_temp, room1_setp, outside_temp, _, prev_ac_status, _, prev_damper0, _, prev_damper1 = obs
+		# print(prev_ac_status)
+		prev_dampers = [[bool(prev_damper0), bool(prev_damper1)]]
+
+		if room0_temp > room0_setp + epsilon and room1_temp > room1_setp:
+			ac_status, dampers = (-1, [[False, False]])
+		elif room0_temp < room0_setp - epsilon and room1_temp < room1_setp:
+			ac_status, dampers = (1, [[False, False]])
+		
+		elif room0_temp > room0_setp and room1_temp > room1_setp + epsilon:
+			ac_status, dampers = (-1, [[False, False]])
+		elif room0_temp < room0_setp and room1_temp < room1_setp - epsilon:
+			ac_status, dampers = (1, [[False, False]])
+
+		elif room0_temp > room0_setp + epsilon and abs(room1_temp - room1_setp) < epsilon:
+			ac_status, dampers = (-1, [[False, True]])
+		elif room1_temp > room1_setp + epsilon and abs(room0_temp - room0_setp) < epsilon:
+			ac_status, dampers = (-1, [[True, False]])
+		
+		elif room0_temp < room0_setp - epsilon and abs(room1_temp - room1_setp) < epsilon:
+			ac_status, dampers = (1, [[False, True]])
+		elif room1_temp < room1_setp - epsilon and abs(room0_temp - room0_setp) < epsilon:
+			ac_status, dampers = (1, [[True, False]])
+		
+		elif room0_temp > room0_setp + epsilon and room1_temp < room1_setp - epsilon:
+			error0, error1 = abs(room0_temp - room0_setp), abs(room1_temp - room1_setp)
+			if error0 > error1:
+				ac_status, dampers = (-1, [[False, True]])
+			else:
+				ac_status, dampers = (1, [[True, False]])
+		elif room0_temp < room0_setp - epsilon and room1_temp > room1_setp + epsilon:
+			error0, error1 = abs(room0_temp - room0_setp), abs(room1_temp - room1_setp)
+			if error0 > error1:
+				ac_status, dampers = (1, [[False, True]])
+			else:
+				ac_status, dampers = (-1, [[True, False]])
+		else:
+			ac_status, dampers = (prev_ac_status, prev_dampers)
+		
+		if room0_temp > outside_temp and room1_temp > outside_temp and ac_status < 0:
+			ac_status = 0
+			dampers = prev_dampers
+		if room0_temp < outside_temp and room1_temp < outside_temp and ac_status > 0:
+			ac_status = 0
+			dampers = prev_dampers
+		
+		# print(room0_temp, room0_setp, room1_temp, room1_setp, outside_temp, ac_status, dampers)
+		return env.actions.index((ac_status, dampers))
+
+
+
 
 if __name__ == "__main__":
 	args = parser.parse_args()
@@ -27,8 +84,8 @@ if __name__ == "__main__":
 		args.output = "out.png"
 		print("warn: no output passed, default to out.png")
 	if args.model == None:
-		args.model = "model.pt"
-		print("warn: no model passed, default to model.pt")
+		args.model = "dagger_out.zip"
+		print("warn: no model passed, default to dagger_out.zip")
 
 	env = gym_environment.Environment()
 
@@ -71,7 +128,8 @@ if __name__ == "__main__":
 		ac_cycle = 0
 
 
-		model = imitation.policies.base.FeedForward32Policy.load("dagger_out2.zip")
+		# model = imitation.policies.base.FeedForward32Policy.load(args.model)
+		model = DumbPolicy(env.observation_space, env.action_space)
 		obs, _ = env.reset(num_setpoints=num_setpoints, length=sim_max, weather_start=weather_start)
 
 		for t in range(sim_max):
