@@ -107,8 +107,10 @@ bc_trainer = imitation.algorithms.bc.BC(
 	observation_space=env.observation_space,
 	action_space=env.action_space,
 	rng=rng,
-	device="cuda"
+	device="cuda",
+	policy=imitation.policies.base.FeedForward32Policy.load("dagger_out2.zip")
 )
+
 with tempfile.TemporaryDirectory(prefix="dagger_example_") as tmpdir:
 	print(tmpdir)
 	dagger_trainer = imitation.algorithms.dagger.SimpleDAggerTrainer(
@@ -127,7 +129,7 @@ print("before:", np.mean(before_reward))
 print("after:", np.mean(after_reward))
 print("expert:", np.mean(stupid_reward))
 
-dagger_trainer.policy.save("dagger_out2.zip")
+dagger_trainer.policy.save("dagger_out3.zip")
 
 # rng = np.random.default_rng()
 # rollouts = imitation.data.rollout.rollout(
