@@ -31,8 +31,7 @@ import stable_baselines3.ppo
 import numpy as np
 from typing import Union, Dict
 
-DATASET_SIZE = 200
-TRAIN_TIMESTEPS = 3000
+TIMESTEPS = 100_000
 
 gym.register(
 	id="HVAC-v0",
@@ -120,7 +119,7 @@ with tempfile.TemporaryDirectory(prefix="dagger_example_") as tmpdir:
 		rng=rng,
 	)
 	before_reward, _ = stable_baselines3.common.evaluation.evaluate_policy(dagger_trainer.policy, env, 100)
-	dagger_trainer.train(1_000)
+	dagger_trainer.train(TIMESTEPS)
 
 after_reward, _ = stable_baselines3.common.evaluation.evaluate_policy(dagger_trainer.policy, env, 100)
 stupid_reward, _ = stable_baselines3.common.evaluation.evaluate_policy(stupid, env, 100)
@@ -128,7 +127,7 @@ print("before:", np.mean(before_reward))
 print("after:", np.mean(after_reward))
 print("expert:", np.mean(stupid_reward))
 
-dagger_trainer.policy.save("dagger_out.zip")
+dagger_trainer.policy.save("dagger_out2.zip")
 
 # rng = np.random.default_rng()
 # rollouts = imitation.data.rollout.rollout(
