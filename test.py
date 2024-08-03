@@ -10,8 +10,9 @@ gym.register(
 	max_episode_steps=1440,
 )
 env = gym.make("HVAC-v0")
-dagger = imitation.policies.base.FeedForward32Policy.load("dagger_out2.zip")
+dagger = imitation.policies.base.FeedForward32Policy.load("dagger_out.zip")
 
-reward, _ = stable_baselines3.common.evaluation.evaluate_policy(dagger, env, 100)
-print("expert:", np.mean(reward))
+# reward, _ = stable_baselines3.common.evaluation.evaluate_policy(dagger, env, 100)
+# print("expert:", np.mean(reward))
 
+print(dagger)

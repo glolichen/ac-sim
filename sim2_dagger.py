@@ -29,8 +29,8 @@ if __name__ == "__main__":
 		args.output = "out.png"
 		print("warn: no output passed, default to out.png")
 	if args.model == None:
-		args.model = "model.pt"
-		print("warn: no model passed, default to model.pt")
+		args.model = "dagger_out.zip"
+		print("warn: no model passed, default to dagger_out.zip")
 	if args.time == None:
 		args.time = 1440
 		print("warn: no time passed, default to 1440")
@@ -45,7 +45,7 @@ if __name__ == "__main__":
 	# policy_net.load_state_dict(torch.load(args.model))
 
 
-	model = imitation.policies.base.FeedForward32Policy.load("dagger_out2.zip")
+	model = imitation.policies.base.FeedForward32Policy.load(args.model)
 
 	# model = stable_baselines3.DQN.load(args.model)
 	# model = stable_baselines3.DQN.load("./logs/dqn/HVAC-v0_7/rl_model_1440000_steps.zip")
