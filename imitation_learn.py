@@ -31,7 +31,7 @@ import stable_baselines3.ppo
 import numpy as np
 from typing import Union, Dict
 
-TIMESTEPS = 200_000
+TIMESTEPS = 500_000
 
 gym.register(
 	id="HVAC-v0",
@@ -108,7 +108,7 @@ bc_trainer = imitation.algorithms.bc.BC(
 	action_space=env.action_space,
 	rng=rng,
 	device="cuda",
-	# policy=imitation.policies.base.FeedForward32Policy.load("dagger_out2.zip")
+  policy=imitation.policies.base.FeedForward32Policy.load("dagger_out.zip")
 )
 
 with tempfile.TemporaryDirectory(prefix="dagger_example_") as tmpdir:
@@ -129,7 +129,7 @@ print("before:", np.mean(before_reward))
 print("after:", np.mean(after_reward))
 print("expert:", np.mean(stupid_reward))
 
-dagger_trainer.policy.save("dagger_out.zip")
+dagger_trainer.policy.save("dagger_out2.zip")
 
 # rng = np.random.default_rng()
 # rollouts = imitation.data.rollout.rollout(
