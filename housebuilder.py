@@ -413,7 +413,7 @@ def find_overlap(w0: Wall, w1: Wall) -> float:
 			return w0.p0.get_distance(w1.p1)
 		
 		# this shouldn't happen
-		error("jayden li programming error (1)")
+		return 0
 
 	if w0_vertical or w1_vertical:
 		return 0
@@ -425,6 +425,8 @@ def find_overlap(w0: Wall, w1: Wall) -> float:
 
 	const0 = w0.p0.y - slope0 * w0.p0.x
 	const1 = w1.p0.y - slope1 * w1.p0.x
+
+	# print(slope0, const0, slope1, const1)
 
 	# Case 0. Walls are not intersecting
 	if not fp_equal(const0, const1):
@@ -444,8 +446,7 @@ def find_overlap(w0: Wall, w1: Wall) -> float:
 	if w1.is_inside(w0.p0) and w0.is_inside(w1.p1):
 		return w0.p0.get_distance(w1.p1)
 	
-	# also shouldn't happen
-	error("jayden li programming error (1)")
+	return 0
 
 def build_house(file_name: str) -> House:
 	with open(file_name, "r") as file:
