@@ -25,9 +25,12 @@ model.policy = dagger
 
 before_reward, _ = stable_baselines3.common.evaluation.evaluate_policy(model, env, 100)
 
-model.learn(total_timesteps=2880)
+model.learn(total_timesteps=1440 * 1000)
 
 after_reward, _ = stable_baselines3.common.evaluation.evaluate_policy(model, env, 100)
 
 print("before:", np.mean(before_reward))
 print("after:", np.mean(after_reward))
+
+model.save("further_train.zip")
+
