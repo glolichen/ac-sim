@@ -3,4 +3,3 @@ venv/*
 agents/__pycache__/*
 *.png
 *.txt
-*.pt
