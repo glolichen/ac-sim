@@ -178,12 +178,12 @@ class House:
 				room1_present = i
 
 		if room0_present == -1:
-			self.internal_walls[floor][room0].append((room1, length))
+			self.internal_walls[floor][room0].append([room1, length])
 		else:
 			self.internal_walls[floor][room0][room0_present][1] += length
 
 		if room1_present == -1:
-			self.internal_walls[floor][room1].append((room0, length))
+			self.internal_walls[floor][room1].append([room0, length])
 		else:
 			self.internal_walls[floor][room1][room1_present][1] += length
 
