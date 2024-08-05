@@ -1,0 +1,125 @@
+{
+	"floors": [
+		{
+			"height": 3,
+			"rooms": [
+				{
+					"walls": [
+						{
+							"x0": 0,
+							"y0": 0,
+							"x1": 5,
+							"y1": 0,
+							"windows": [],
+							"doors": []
+						},
+						{
+							"x0": 5,
+							"y0": 0,
+							"x1": 5,
+							"y1": 2,
+							"windows": [],
+							"doors": []
+						},
+						{
+							"x0": 5,
+							"y0": 2,
+							"x1": 0,
+							"y1": 2,
+							"windows": [],
+							"doors": []
+						},
+						{
+							"x0": 0,
+							"y0": 2,
+							"x1": 0,
+							"y1": 0,
+							"windows": [],
+							"doors": []
+						}
+					]
+				},
+				{
+					"walls": [
+						{
+							"x0": 0,
+							"y0": 2,
+							"x1": 5,
+							"y1": 2,
+							"windows": [],
+							"doors": []
+						},
+						{
+							"x0": 5,
+							"y0": 2,
+							"x1": 5,
+							"y1": 4,
+							"windows": [],
+							"doors": []
+						},
+						{
+							"x0": 5,
+							"y0": 4,
+							"x1": 0,
+							"y1": 4,
+							"windows": [],
+							"doors": []
+						},
+						{
+							"x0": 0,
+							"y0": 4,
+							"x1": 0,
+							"y1": 2,
+							"windows": [],
+							"doors": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"constants": {
+		"cooler_btu": 2000,
+		"heater_btu": 2500,
+
+		"ext_wall_thick": 0.15,
+		"int_wall_thick": 0.12,
+		"ext_wall_therm_cond": 0.04,
+		"int_wall_therm_cond": 0.18,
+
+		"ext_roof_thick": 0.12,
+		"int_roof_thick": 0.12,
+		"ext_roof_therm_cond": 0.15,
+		"int_roof_therm_cond": 0.62,
+
+		"outside_convection": 22,
+		"inside_convection": 6,
+
+		"settings": [-1, 0, 1],
+
+		"air_density": 1.293,
+		"air_heat_capacity": 718,
+
+		"ext_wall_ext_thick": 0.01,
+		"ext_wall_ext_heat_capacity": 1000,
+		"ext_wall_ext_density": 1300,
+		"ext_wall_int_thick": 0.01,
+		"ext_wall_int_heat_capacity": 837,
+		"ext_wall_int_density": 801,
+
+		"ext_roof_ext_thick": 0.045,
+		"ext_roof_ext_heat_capacity": 1400,
+		"ext_roof_ext_density": 860,
+		"ext_roof_int_thick": 0.015,
+		"ext_roof_int_heat_capacity": 1860,
+		"ext_roof_int_density": 630,
+
+		"int_wall_outside_thick": 0.01,
+		"int_wall_outside_heat_capacity": 1000,
+		"int_wall_outside_density": 800,
+
+		"damper_leak": 0.05,
+
+		"epsilon": 0.8
+	}
+}

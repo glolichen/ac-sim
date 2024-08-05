@@ -108,7 +108,7 @@ bc_trainer = imitation.algorithms.bc.BC(
 	action_space=env.action_space,
 	rng=rng,
 	device="cuda",
-  policy=imitation.policies.base.FeedForward32Policy.load("dagger_out.zip")
+#   policy=imitation.policies.base.FeedForward32Policy.load("dagger_out.zip")
 )
 
 with tempfile.TemporaryDirectory(prefix="dagger_example_") as tmpdir:

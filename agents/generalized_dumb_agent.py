@@ -36,7 +36,6 @@ def agent(house: housebuilder. House, outside_temp: float):
 		else:
 			statuses.append(Status.EQUAL.value)
 
-	
 	dampers = [[]]
 	if need_heat > need_cool:
 		if max_temp >= outside_temp:

@@ -1,11 +1,9 @@
-import torch
-
 OUTSIDE_TEMP = []
 WEATHER_FILES = [
 	"weather1.csv",
 	"weather2.csv",
 ]
-DEVICE = torch.device("cpu")
+DEVICE = "cpu"
 for file in WEATHER_FILES:
 	with open(file, "r") as file:
 		for line in file.readlines():

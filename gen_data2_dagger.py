@@ -94,6 +94,9 @@ if __name__ == "__main__":
 
 	ax0 = fig.add_subplot(spec[0])
 	ax1 = fig.add_subplot(spec[1])
+	
+	ax0.set_ylim([0, 3])
+	ax1.set_ylim([0, 500])
 
 	episode_count = int(args.episodes)
 	sim_max = 1440
@@ -128,8 +131,8 @@ if __name__ == "__main__":
 		ac_cycle = 0
 
 
-		# model = imitation.policies.base.FeedForward32Policy.load(args.model)
-		model = DumbPolicy(env.observation_space, env.action_space)
+		model = imitation.policies.base.FeedForward32Policy.load(args.model)
+		# model = DumbPolicy(env.observation_space, env.action_space)
 		obs, _ = env.reset(num_setpoints=num_setpoints, length=sim_max, weather_start=weather_start)
 
 		for t in range(sim_max):

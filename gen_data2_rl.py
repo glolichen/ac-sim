@@ -24,8 +24,8 @@ if __name__ == "__main__":
 		args.output = "out.png"
 		print("warn: no output passed, default to out.png")
 	if args.model == None:
-		args.model = "model.pt"
-		print("warn: no model passed, default to model.pt")
+		args.model = "model.zip"
+		print("warn: no model passed, default to model.zip")
 
 	env = gym_environment.Environment()
 
@@ -67,7 +67,7 @@ if __name__ == "__main__":
 		damper1_cycle = 0
 		ac_cycle = 0
 
-		model = stable_baselines3.DQN.load("dqn_house.zip")
+		model = stable_baselines3.DQN.load(args.model)
 
 		obs, _ = env.reset(num_setpoints=num_setpoints, length=sim_max, weather_start=weather_start)
 

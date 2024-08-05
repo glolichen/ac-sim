@@ -7,6 +7,8 @@ import housebuilder
 import sys
 import time
 import argparse
+from agents.dumb_agent2 import agent
+# from agents.generalized_dumb_agent import agent
 
 parser = argparse.ArgumentParser(prog="GenData2Dumb")
 parser.add_argument("episodes")
@@ -23,6 +25,9 @@ if __name__ == "__main__":
 
 	ax0 = fig.add_subplot(spec[0])
 	ax1 = fig.add_subplot(spec[1])
+	
+	ax0.set_ylim([0, 3])
+	ax1.set_ylim([0, 500])
 
 	episode_count = int(args.episodes)
 	sim_max = 1440
@@ -43,8 +48,6 @@ if __name__ == "__main__":
 		random.seed(seed_time)
 
 		house = housebuilder.build_house("2r_simple.json")
-
-		from agents.generalized_dumb_agent import agent
 		
 		weather_start = random.randrange(0, len(const.OUTSIDE_TEMP) - sim_max)
 

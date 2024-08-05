@@ -495,7 +495,7 @@ def build_house(file_name: str) -> House:
 			new_coords.append(new_coords[0])
 			for j in range(len(new_coords) - 1):
 				area += (new_coords[j].y + new_coords[j + 1].y) * (new_coords[j].x - new_coords[j + 1].x)
-			area /= 2
+			area = abs(area) / 2
 			# print(area)
 
 			room = Room(walls, area, room_height, house.constants)
