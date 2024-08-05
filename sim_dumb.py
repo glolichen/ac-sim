@@ -85,10 +85,8 @@ def main():
 
 	for t in range(sim_max):
 		if t in change_temp:
-			base_temp = random.uniform(22, 26)
-			rooms[0].set_setpoint(base_temp)
-			for i in range(1, num_rooms):
-				rooms[i].set_setpoint(base_temp + random.uniform(-2, 2))
+			for room in rooms:
+				room.set_setpoint(random.uniform(20, 28))
 				
 		for i in range(num_rooms):
 			temps[i][t] = rooms[i].get_temp()

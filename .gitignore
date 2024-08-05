@@ -1,6 +1,5 @@
 __pycache__/*
 venv/*
 agents/__pycache__/*
-*.png
 *.txt
 imitation_learn.ipynb

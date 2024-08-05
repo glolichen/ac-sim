@@ -22,8 +22,8 @@ def main():
 	global num
 	args = parser.parse_args()
 	if args.output == None:
-		args.output = "out.png"
-		print("warn: no output passed, default to out.png")
+		args.output = "out/out.png"
+		print("warn: no output passed, default to out/out.png")
 	if args.time == None:
 		args.time = 1440
 		print("warn: no time passed, default to 1440")
@@ -33,7 +33,7 @@ def main():
 
 	env = gym_environment.Environment()
 
-	num_rooms = 5
+	num_rooms = 2
 
 	fig = plt.figure()
 	spec = gridspec.GridSpec(
