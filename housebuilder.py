@@ -1,7 +1,7 @@
 import json
 import typing
 import sys
-import inspect
+from typing import List
 import random
 import math
 
@@ -194,7 +194,7 @@ class House:
 	def set_height(self, floor: int, height: float):
 		self.height[floor] = height
 	
-	def get_rooms(self, floor: int) -> list:
+	def get_rooms(self, floor: int) -> List[Room]:
 		return self.rooms[floor]
 	def get_internal_walls(self, floor: int, room: int) -> list:
 		return self.internal_walls[floor][room]
