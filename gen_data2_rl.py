@@ -23,10 +23,10 @@ class DQN(nn.Module):
 		# self.fc1 = nn.Linear(observation_size, 128)
 		# self.fc2 = nn.Linear(128, 128)
 		# self.fc3 = nn.Linear(128, action_size)
-		self.fc1 = nn.Linear(observation_size, 16)
-		self.fc2 = nn.Linear(16, 32)
-		self.fc3 = nn.Linear(32, 64)
-		self.fc4 = nn.Linear(64, action_size)
+		self.fc1 = nn.Linear(observation_size, 64)
+		self.fc2 = nn.Linear(64, 128)
+		self.fc3 = nn.Linear(128, 256)
+		self.fc4 = nn.Linear(256, action_size)
 
 	def forward(self, x):
 		x = F.relu(self.fc1(x))
