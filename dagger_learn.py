@@ -177,14 +177,14 @@ def main():
 			bc_trainer=bc_trainer,
 			rng=rng,
 		)
-		before_reward, _ = stable_baselines3.common.evaluation.evaluate_policy(dagger_trainer.policy, env, 100)
+		# before_reward, _ = stable_baselines3.common.evaluation.evaluate_policy(dagger_trainer.policy, env, 100)
 		dagger_trainer.train(int(args.timesteps))
 
-	after_reward, _ = stable_baselines3.common.evaluation.evaluate_policy(dagger_trainer.policy, env, 100)
-	stupid_reward, _ = stable_baselines3.common.evaluation.evaluate_policy(stupid, env, 100)
-	print("before:", np.mean(before_reward))
-	print("after:", np.mean(after_reward))
-	print("expert:", np.mean(stupid_reward))
+	# after_reward, _ = stable_baselines3.common.evaluation.evaluate_policy(dagger_trainer.policy, env, 100)
+	# stupid_reward, _ = stable_baselines3.common.evaluation.evaluate_policy(stupid, env, 100)
+	# print("before:", np.mean(before_reward))
+	# print("after:", np.mean(after_reward))
+	# print("expert:", np.mean(stupid_reward))
 
 	dagger_trainer.policy.save(args.output)
 

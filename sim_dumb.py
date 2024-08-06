@@ -5,7 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import sys
-import time
 import argparse
 from typing import List
 # from agents.dumb_agent2 import agent

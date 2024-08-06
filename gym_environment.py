@@ -64,14 +64,16 @@ class Environment(gym.Env):
 		self.house.step(const.OUTSIDE_TEMP[self._weather_start + self._time], power, dampers)
 
 		reward = self._get_reward()
-		if power != self._prev_ac:
+		if power != self._prev_ac and self._ac_cycles > 100:
 			self._prev_ac = power
-			reward -= 1
+			self._ac_cycles += 1
+			reward -= 10
 		
 		for i in range(self.num_rooms):
-			if dampers[0][i] != self._prev_damper[i]:
+			if dampers[0][i] != self._prev_damper[i] and self._damper_cycles[i] > 100:
 				self._prev_damper[i] = dampers[0][i]
-				reward -= 0.15
+				self._damper_cycles[i] += 1
+				reward -= 1.5
 
 		terminated = self._time > self._length
 		self._time += 1

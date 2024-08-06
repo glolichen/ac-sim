@@ -5,17 +5,11 @@ import const
 import random
 import housebuilder
 import sys
-import stable_baselines3
-import time
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import gym_environment
 import argparse
 import imitation
 import imitation.policies
 import imitation.policies.base
-from typing import Union, Dict
 
 parser = argparse.ArgumentParser(prog="GenData2RL")
 parser.add_argument("episodes")
