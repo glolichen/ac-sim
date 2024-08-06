@@ -11,11 +11,10 @@ from typing import List
 # from agents.dumb_agent2 import agent
 from agents.generalized_dumb_agent import agent
 
-parser = argparse.ArgumentParser(prog="Simulator")
+parser = argparse.ArgumentParser(prog="Simulator", add_help=False)
 parser.add_argument("-o", "--output")
 parser.add_argument("-t", "--time")
 parser.add_argument("-h", "--house")
-parser.add_argument("-a", "--agent")
 
 def main():
 	global num
@@ -28,9 +27,6 @@ def main():
 		print("warn: no time passed, default to 1440")
 	if args.house == None:
 		print("error: no house entered!")
-		sys.exit(1)
-	if args.agent == None:
-		print("error: no agent entered!")
 		sys.exit(1)
 
 	house = housebuilder.build_house(args.house)

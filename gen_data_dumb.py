@@ -19,7 +19,7 @@ def main():
 		args.output = "out/out.png"
 		print("warn: no output passed, default to out/out.png")
 
-	num_rooms = 2
+	num_rooms = 5
 
 	fig = plt.figure()
 	spec = gridspec.GridSpec(nrows=1, ncols=2, width_ratios=[num_rooms, num_rooms + 1])
@@ -49,7 +49,7 @@ def main():
 		seed_time = time.time()
 		random.seed(seed_time)
 
-		house = housebuilder.build_house("2r_simple.json")
+		house = housebuilder.build_house("5r_crazy.json")
 		
 		weather_start = random.randrange(0, len(const.OUTSIDE_TEMP) - sim_max)
 

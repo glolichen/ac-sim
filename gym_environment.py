@@ -9,7 +9,7 @@ class Environment(gym.Env):
 	# num_rooms = 5
 	num_rooms = 2
 	def __init__(self):
-		self.observation_space = gym.spaces.Box(-10, 400, shape=(self.num_rooms * 4 + 3,), dtype=float)
+		self.observation_space = gym.spaces.Box(-10, 3000, shape=(self.num_rooms * 4 + 3,), dtype=float)
 		combinations = itertools.product([True, False], repeat=self.num_rooms)
 		self.actions = []
 		for c in combinations:
@@ -66,12 +66,16 @@ class Environment(gym.Env):
 		reward = self._get_reward()
 		if power != self._prev_ac:
 			self._prev_ac = power
-			reward -= 1
+			self._ac_cycles += 1
+			if self._ac_cycles > 100:
+				reward -= 2
 		
 		for i in range(self.num_rooms):
 			if dampers[0][i] != self._prev_damper[i]:
 				self._prev_damper[i] = dampers[0][i]
-				reward -= 0.15
+				self._damper_cycles[i] += 1
+				if self._damper_cycles[i] > 80:
+					reward -= 1
 
 		terminated = self._time > self._length
 		self._time += 1

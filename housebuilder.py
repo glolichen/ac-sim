@@ -310,6 +310,7 @@ class House:
 			for j in range(len(self.rooms[i])):
 				room: Room = self.rooms[i][j]
 				change = room.joule_to_temp_air(power_pct[i][j] * energy_transfer * 60)
+				change *= random.uniform(0.666, 1.5)
 				room.add_air_temp(change)
 
 		for i in range(len(self.rooms)):
@@ -319,6 +320,7 @@ class House:
 				wall_outside_mass = surface_area * self.constants.int_wall_outside_thick * self.constants.int_wall_outside_density
 				change = self.constants.inside_convection * surface_area * (room.get_temp() - self.int_wall_temp[i][j])
 				change = change * 60 / (wall_outside_mass * self.constants.int_wall_outside_heat_capacity)
+				change *= random.uniform(0.666, 1.5)
 				self.int_wall_temp[i][j] += change
 
 	def step(self, outside_temp: float, ac_status: float, dampers: list):
