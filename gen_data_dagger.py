@@ -58,7 +58,7 @@ def main():
 		[np.zeros(episode_count) for _ in range(num_rooms)]
 	)}
 	cycles["cycles (ac)"] = np.zeros(episode_count)
-	
+
 	model = imitation.policies.base.FeedForward32Policy.load(args.model)
 
 	for ie in range(episode_count):

@@ -41,9 +41,9 @@ def main():
 
 	model = stable_baselines3.ppo.PPO(
 		imitation.policies.base.FeedForward32Policy, venv, verbose=1,
-		batch_size=512, n_steps=2048, gamma=0.9, learning_rate=0.001031942897063114,
-		ent_coef=1.1176257099577095e-08, clip_range=0.4, n_epochs=1, gae_lambda=0.8,
-		max_grad_norm=0.7, vf_coef=0.5585552871658679
+		# batch_size=512, n_steps=2048, gamma=0.9, learning_rate=0.001031942897063114,
+		# ent_coef=1.1176257099577095e-08, clip_range=0.4, n_epochs=1, gae_lambda=0.8,
+		# max_grad_norm=0.7, vf_coef=0.5585552871658679
 	)
 	model.policy = dagger
 

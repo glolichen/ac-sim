@@ -12,6 +12,8 @@ import gym_environment
 import imitation
 import imitation.policies
 import imitation.policies.base
+import enum
+from typing import Union, Dict
 
 parser = argparse.ArgumentParser(prog="SimulatorDAgger", add_help=False)
 parser.add_argument("-o", "--output")
@@ -77,6 +79,97 @@ def main():
 	damper_cycles = [0 for _ in range(num_rooms)]
 	ac_cycle = 0
 
+	class DumbPolicy(imitation.policies.base.NonTrainablePolicy):
+		class Status(enum.Enum):
+			NEED_COOL = 0
+			WANT_COOL = 1
+			NEED_HEAT = 2
+			WANT_HEAT = 3
+			EQUAL = 4
+		def _choose_action(self, obs: Union[np.ndarray, Dict[str, np.ndarray]],) -> int:
+			num_rooms = int((len(obs) - 3) / 4)
+
+			epsilon = 0.9
+			statuses = []
+			need_heat, need_cool = 0, 0
+			badness_heat, badness_cool = 0, 0
+			min_temp, max_temp = 100000, -100000
+
+			old_ac_status = obs[num_rooms * 2 + 2]
+			old_dampers = [[]]
+			for i in range(num_rooms):
+				old_dampers[0].append(obs[num_rooms * 2 + 4 + i * 2])
+
+			for i in range(num_rooms):
+				temp, setp = obs[i * 2], obs[i * 2 + 1]
+				min_temp = min(min_temp, temp)
+				max_temp = max(max_temp, temp)
+				if temp < setp - epsilon:
+					statuses.append(self.Status.NEED_HEAT.value)
+					badness_heat += abs(temp - setp)
+					need_heat += 1
+				elif temp < setp:
+					statuses.append(self.Status.WANT_HEAT.value)
+					badness_heat += abs(temp - setp)
+				elif temp > setp + epsilon:
+					statuses.append(self.Status.NEED_COOL.value)
+					badness_cool += abs(temp - setp)
+					need_cool += 1
+				elif temp > setp:
+					statuses.append(self.Status.WANT_COOL.value)
+					badness_cool += abs(temp - setp)
+				else:
+					statuses.append(self.Status.EQUAL.value)
+
+			outside_temp = obs[num_rooms * 2]
+			dampers = [[]]
+			if need_heat > need_cool:
+				if max_temp >= outside_temp:
+					for status in statuses:
+						if status == self.Status.NEED_HEAT.value or status == self.Status.WANT_HEAT.value:
+							dampers[0].append(False)
+						else:
+							dampers[0].append(True)
+					return env.actions.index((1, dampers))
+				else:
+					return env.actions.index((0, old_dampers))
+			if need_cool > need_heat:
+				if min_temp <= outside_temp:
+					for status in statuses:
+						if status == self.Status.NEED_COOL.value or status == self.Status.WANT_COOL.value:
+							dampers[0].append(False)
+						else:
+							dampers[0].append(True)
+					return env.actions.index((-1, dampers))
+				else:
+					return env.actions.index((0, old_dampers))
+
+			if need_cool > 0 and need_heat > 0:
+				if badness_cool > badness_heat:
+					if min_temp <= outside_temp:
+						for status in statuses:
+							if status == self.Status.NEED_COOL.value or status == self.Status.WANT_COOL.value:
+								dampers[0].append(False)
+							else:
+								dampers[0].append(True)
+						return env.actions.index((-1, dampers))
+					else:
+						return env.actions.index((0, old_dampers))
+				if badness_heat > badness_cool:
+					if max_temp >= outside_temp:
+						for status in statuses:
+							if status == self.Status.NEED_HEAT.value or status == self.Status.WANT_HEAT.value:
+								dampers[0].append(False)
+							else:
+								dampers[0].append(True)
+						return env.actions.index((1, dampers))
+					else:
+						return env.actions.index((0, old_dampers))
+				
+			return env.actions.index((old_ac_status, old_dampers))
+
+	
+	# model = DumbPolicy(env.observation_space, env.action_space)
 	model = imitation.policies.base.FeedForward32Policy.load(args.model)
 
 	obs, _ = env.reset(num_setpoints=num_setpoints, length=sim_max, weather_start=weather_start)

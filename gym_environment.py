@@ -26,7 +26,8 @@ class Environment(gym.Env):
 			ret = np.concatenate((ret, np.array([room.get_temp(), room.get_setpoint()])))
 		# num_rooms * 2
 		ret = np.concatenate((ret, np.array([
-			const.OUTSIDE_TEMP[self._weather_start + self._time],
+			# const.OUTSIDE_TEMP[self._weather_start + self._time],
+			0,
 			self._ac_cycles,
 			self._prev_ac
 		])))
@@ -67,14 +68,14 @@ class Environment(gym.Env):
 		if power != self._prev_ac:
 			self._prev_ac = power
 			self._ac_cycles += 1
-			if self._ac_cycles > 130:
-				reward -= 2
+			if self._ac_cycles > 150:
+				reward -= 1.5
 		
 		for i in range(self.num_rooms):
 			if dampers[0][i] != self._prev_damper[i]:
 				self._prev_damper[i] = dampers[0][i]
 				self._damper_cycles[i] += 1
-				if self._damper_cycles[i] > 80:
+				if self._damper_cycles[i] > 100:
 					reward -= 1
 
 		terminated = self._time > self._length

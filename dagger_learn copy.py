@@ -42,10 +42,10 @@ parser.add_argument("-o", "--output")
 parser.add_argument("-m", "--model")
 parser.add_argument("-t", "--timesteps")
 
-class FeedForward256Policy(stable_baselines3.common.policies.ActorCriticPolicy):
-	def __init__(self, *args, **kwargs):
-		"""Builds FeedForward32Policy; arguments passed to `ActorCriticPolicy`."""
-		super().__init__(*args, **kwargs, net_arch=[64, 128])
+# class FeedForward256Policy(stable_baselines3.common.policies.ActorCriticPolicy):
+# 	def __init__(self, *args, **kwargs):
+# 		"""Builds FeedForward32Policy; arguments passed to `ActorCriticPolicy`."""
+# 		super().__init__(*args, **kwargs, net_arch=[64, 128])
 
 
 def main():
@@ -165,7 +165,7 @@ def main():
 	rng = np.random.default_rng(0)
 
 	if args.model == None:
-		continue_policy = FeedForward256Policy(env.observation_space, env.action_space, lambda _: torch.finfo(torch.float32).max,)
+		continue_policy = None
 	else:
 		continue_policy = imitation.policies.base.FeedForward32Policy.load(args.model)
 
