@@ -292,6 +292,6 @@
 
 		"damper_leak": 0.05,
 
-		"epsilon": 0.8
+		"epsilon": 2.0
 	}
 }

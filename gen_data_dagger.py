@@ -31,7 +31,7 @@ def main():
 		args.model = "dagger_out.zip"
 		print("warn: no model passed, default to dagger_out.zip")
 
-	num_rooms = 2
+	num_rooms = 5
 
 	env = gym_environment.Environment()
 
@@ -90,11 +90,10 @@ def main():
 					damper_cycles[i] += 1
 				damper_prevs[i] = dampers[0][i]
 
-		deviations["deviation (0)"][ie] = total_devs[0] / sim_max
-		deviations["deviation (1)"][ie] = total_devs[1] / sim_max
+		for i in range(num_rooms):
+			deviations[f"deviation ({i})"][ie] = total_devs[i] / sim_max
+			cycles[f"cycles (damper) ({i})"][ie] = damper_cycles[i]
 		cycles["cycles (ac)"][ie] = ac_cycle
-		cycles["cycles (damper) (0)"][ie] = damper_cycles[0]
-		cycles["cycles (damper) (1)"][ie] = damper_cycles[1]
 
 		print(f"{' ' * 20}\r{ie + 1}/{episode_count}", end="\r", file=sys.stderr)
 

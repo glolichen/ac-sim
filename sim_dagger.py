@@ -33,7 +33,7 @@ def main():
 
 	env = gym_environment.Environment()
 
-	num_rooms = 2
+	num_rooms = 5
 
 	fig = plt.figure()
 	spec = gridspec.GridSpec(

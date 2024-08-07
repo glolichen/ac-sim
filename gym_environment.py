@@ -6,8 +6,8 @@ import itertools
 import const
 
 class Environment(gym.Env):
-	# num_rooms = 5
-	num_rooms = 2
+	num_rooms = 5
+	# num_rooms = 2
 	def __init__(self):
 		self.observation_space = gym.spaces.Box(-10, 3000, shape=(self.num_rooms * 4 + 3,), dtype=float)
 		combinations = itertools.product([True, False], repeat=self.num_rooms)
@@ -17,8 +17,8 @@ class Environment(gym.Env):
 			self.actions.append(( 0, [list(c)] ))
 			self.actions.append(( 1, [list(c)] ))
 		self.action_space = gym.spaces.Discrete(len(self.actions))
-		# self._house_cfg = "5r_crazy.json"
-		self._house_cfg = "2r_simple.json"
+		self._house_cfg = "5r_crazy.json"
+		# self._house_cfg = "2r_simple.json"
 
 	def _get_observations(self):
 		ret = np.array([])
@@ -67,7 +67,7 @@ class Environment(gym.Env):
 		if power != self._prev_ac:
 			self._prev_ac = power
 			self._ac_cycles += 1
-			if self._ac_cycles > 100:
+			if self._ac_cycles > 130:
 				reward -= 2
 		
 		for i in range(self.num_rooms):
