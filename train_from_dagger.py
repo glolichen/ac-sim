@@ -13,6 +13,11 @@ parser.add_argument("-o", "--output")
 parser.add_argument("-m", "--model")
 parser.add_argument("-t", "--timesteps")
 
+class CustomFeedForwardPolicy(stable_baselines3.common.policies.ActorCriticPolicy):
+	def __init__(self, *args, **kwargs):
+		"""Builds FeedForward32Policy; arguments passed to `ActorCriticPolicy`."""
+		super().__init__(*args, **kwargs)
+
 def main():
 	args = parser.parse_args()
 	if args.output == None:
@@ -37,13 +42,13 @@ def main():
 		n_envs=4,
 		post_wrappers=[lambda env, _: imitation.data.wrappers.RolloutInfoWrapper(env)],
 	)
-	dagger = imitation.policies.base.FeedForward32Policy.load(args.model)
+	dagger = CustomFeedForwardPolicy.load(args.model)
 
 	model = stable_baselines3.ppo.PPO(
-		imitation.policies.base.FeedForward32Policy, venv, verbose=1,
-		# batch_size=512, n_steps=2048, gamma=0.9, learning_rate=0.001031942897063114,
-		# ent_coef=1.1176257099577095e-08, clip_range=0.4, n_epochs=1, gae_lambda=0.8,
-		# max_grad_norm=0.7, vf_coef=0.5585552871658679
+		CustomFeedForwardPolicy, venv, verbose=1,
+		batch_size=512, n_steps=2048, gamma=0.9, learning_rate=0.001031942897063114,
+		ent_coef=1.1176257099577095e-08, clip_range=0.4, n_epochs=1, gae_lambda=0.8,
+		max_grad_norm=0.7, vf_coef=0.5585552871658679
 	)
 	model.policy = dagger
 

@@ -74,7 +74,7 @@ def main():
 
 		for t in range(sim_max):
 			action, _ = model.predict(obs, deterministic=True)
-			ac_status, dampers = env.get_action(action)
+			ac_status, dampers = env.actions[action]
 			obs, _, terminated, _, _ = env.step(action)
 
 			for i in range(num_rooms):

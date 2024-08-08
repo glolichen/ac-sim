@@ -1,6 +1,6 @@
 import gymnasium as gym
 import imitation.algorithms.dagger
-import gym_environment
+import gym_environment2
 
 import torch
 
@@ -42,7 +42,7 @@ parser.add_argument("-o", "--output")
 parser.add_argument("-m", "--model")
 parser.add_argument("-t", "--timesteps")
 
-class FeedForward256Policy(stable_baselines3.common.policies.ActorCriticPolicy):
+class CustomFeedForwardPolicy(stable_baselines3.common.policies.ActorCriticPolicy):
 	def __init__(self, *args, **kwargs):
 		"""Builds FeedForward32Policy; arguments passed to `ActorCriticPolicy`."""
 		super().__init__(*args, **kwargs, net_arch=[64, 128])
@@ -59,7 +59,7 @@ def main():
 
 	gym.register(
 		id="HVAC-v0",
-		entry_point=gym_environment.Environment,
+		entry_point=gym_environment2.Environment,
 		max_episode_steps=1440,
 	)
 
@@ -79,7 +79,7 @@ def main():
 			WANT_HEAT = 3
 			EQUAL = 4
 		def _choose_action(self, obs: Union[np.ndarray, Dict[str, np.ndarray]],) -> int:
-			num_rooms = int((len(obs) - 3) / 4)
+			num_rooms = int((len(obs) - 2) / 3)
 
 			epsilon = 0.9
 			statuses = []
@@ -90,7 +90,7 @@ def main():
 			old_ac_status = obs[num_rooms * 2 + 2]
 			old_dampers = [[]]
 			for i in range(num_rooms):
-				old_dampers[0].append(obs[num_rooms * 2 + 4 + i * 2])
+				old_dampers[0].append(obs[num_rooms * 2 + 2 + i])
 
 			for i in range(num_rooms):
 				temp, setp = obs[i * 2], obs[i * 2 + 1]
@@ -165,7 +165,7 @@ def main():
 	rng = np.random.default_rng(0)
 
 	if args.model == None:
-		continue_policy = FeedForward256Policy(env.observation_space, env.action_space, lambda _: torch.finfo(torch.float32).max,)
+		continue_policy = CustomFeedForwardPolicy(env.observation_space, env.action_space, lambda _: torch.finfo(torch.float32).max,)
 	else:
 		continue_policy = imitation.policies.base.FeedForward32Policy.load(args.model)
 

@@ -13,6 +13,7 @@ import imitation
 import imitation.policies
 import imitation.policies.base
 import enum
+import stable_baselines3.common.policies
 from typing import Union, Dict
 
 parser = argparse.ArgumentParser(prog="SimulatorDAgger", add_help=False)
@@ -20,6 +21,10 @@ parser.add_argument("-o", "--output")
 parser.add_argument("-t", "--time")
 parser.add_argument("-m", "--model")
 
+class CustomFeedForwardPolicy(stable_baselines3.common.policies.ActorCriticPolicy):
+	def __init__(self, *args, **kwargs):
+		"""Builds FeedForward32Policy; arguments passed to `ActorCriticPolicy`."""
+		super().__init__(*args, **kwargs)
 def main():
 	global num
 	args = parser.parse_args()
@@ -167,10 +172,10 @@ def main():
 						return env.actions.index((0, old_dampers))
 				
 			return env.actions.index((old_ac_status, old_dampers))
-
+ 
 	
 	# model = DumbPolicy(env.observation_space, env.action_space)
-	model = imitation.policies.base.FeedForward32Policy.load(args.model)
+	model = CustomFeedForwardPolicy.load(args.model)
 
 	obs, _ = env.reset(num_setpoints=num_setpoints, length=sim_max, weather_start=weather_start)
 
@@ -178,7 +183,7 @@ def main():
 
 	for t in range(sim_max):
 		action, _ = model.predict(obs, deterministic=True)
-		ac_status, dampers_a = env.get_action(action)
+		ac_status, dampers_a = env.actions[action]
 		obs, _, terminated, _, _ = env.step(action)
 		
 		for i in range(num_rooms):

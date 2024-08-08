@@ -69,7 +69,7 @@ class Environment(gym.Env):
 			self._prev_ac = power
 			self._ac_cycles += 1
 			if self._ac_cycles > 150:
-				reward -= 1.5
+				reward -= 1
 		
 		for i in range(self.num_rooms):
 			if dampers[0][i] != self._prev_damper[i]:
@@ -82,5 +82,5 @@ class Environment(gym.Env):
 		self._time += 1
 		return self._get_observations(), reward, terminated, False, {}
 
-	def get_action(self, num: int):
-		return self.actions[num]
+	def get_actions(self):
+		return self.actions
