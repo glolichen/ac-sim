@@ -39,5 +39,7 @@ Below is a list of known points of strange or buggy behavior. Please note that t
  * Before running `gen_data*` or `sim*` you should change a `num_rooms` variable. This tells the program how many rooms are in the house.
  * There is a bug in `imitation` that makes it impossible to load saved policies. See bug report filed [here](https://github.com/HumanCompatibleAI/imitation/issues/857). A very janky solution is detailed there.
  * There are 2 gym environmnents: `gym_environmnent.Environment` and `gym_environment2.Environment`. The former uses linear deviation penalty and only applies penalty for number of toggles after a certain point. The latter uses a 6th degree function which will make penalty worse based on how bad the deviation is and applies a constant penalty for each toggle. Note the difference in observation size between these two environments, and that when training dagger with `dagger_learn`, you will have to change the DumbPolicy to use the new observation shape. You will have to manually tune these functions to find a reasonable balance between comfort and cycle count.
+ * If you want to train for a different house, make sure you change `num_rooms` and `self._house_cfg` in the correct gym_environment file.
+ * The Deep Q Network branch uses an older version of our custom gym environment that is not as generalized. If you want to use that branch for larger custom houses, consider copying gym environments on the `main` branch over and making the necessary fixes to training or running code.
 
 Have fun!
