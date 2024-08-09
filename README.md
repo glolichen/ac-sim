@@ -13,7 +13,9 @@ To add a custom saving point, use `-s "# of intervals"` and it will save once af
 
 Example input: 
 
-``` python train_rl.py -m better.pt_episode_1000.pt -o new.pt -s 50 1000 ```
+``` 
+python train_rl.py -m better.pt_episode_1000.pt -o new.pt -s 50 1000
+```
 
 ## Gen Data
 
@@ -24,7 +26,9 @@ You must also enter the number of episodes (days) to generate as a command line 
 
 Example input:
 
-``` python gen_data2_rl.py -m better.pt_episode_1000.pt -o out.png 1000 ```
+``` 
+python gen_data2_rl.py -m better.pt_episode_1000.pt -o out.png 1000
+```
 
 ## Sim / Time Series
 
@@ -38,4 +42,6 @@ Default is 1440 or 1 day.
 
 Example input:
 
-``` python sim2_rl.py -m better.pt_episode_1000.pt -o out.png -t 1440 ```
+``` 
+python sim2_rl.py -m better.pt_episode_1000.pt -o out.png -t 1440
+```
