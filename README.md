@@ -45,3 +45,12 @@ Example input:
 ``` 
 python sim2_rl.py -m better.pt_episode_1000.pt -o out.png -t 1440
 ```
+
+## Install
+It is known that this branch works on macOS with Python 3.12* 
+
+Full list of dependencies:
+
+```
+pip install matplotlib optuna numpy gymnasium torch
+```
