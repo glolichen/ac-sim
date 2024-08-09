@@ -198,9 +198,12 @@ for i_episode in range(args.episodes):
         logging.info(f"Episode {i_episode+1}/{args.episodes} - Avg Reward: {avg_reward:.2f}, Epsilon: {epsilon_values[-1]:.4f}")
 
     # Save model and stats periodically
-    if (i_episode + 1) % args.save_interval == 0:
-        save_model_and_stats(i_episode + 1)
-
+    if args.save_interval:
+        if (i_episode + 1) % args.save_interval == 0:
+            save_model_and_stats(i_episode + 1)
+    else:
+        if (i_episode + 1) % 10 == 0:
+            save_model_and_stats(i_episode + 1)
 # Save final model and stats
 save_model_and_stats(args.episodes)
 logging.info("Training complete")
