@@ -37,7 +37,7 @@ class Environment(gym.Env):
 	def _get_reward(self):
 		reward = 0
 		for room in self.house.get_rooms(0):
-			reward -= (1.8 * (room.get_temp() - room.get_setpoint())) * 20
+			reward -= (1.4 * (room.get_temp() - room.get_setpoint())) ** 6
 			# reward -= abs(room.get_temp() - room.get_setpoint())
 		return reward
 	

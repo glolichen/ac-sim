@@ -5,7 +5,7 @@ import stable_baselines3.common.evaluation
 import stable_baselines3.ppo
 import numpy as np
 import gymnasium as gym
-import gym_environment
+import gym_environment2
 import argparse
 
 parser = argparse.ArgumentParser(prog="TrainFromDAgger")
@@ -32,7 +32,7 @@ def main():
 
 	gym.register(
 		id="HVAC-v0",
-		entry_point=gym_environment.Environment,
+		entry_point=gym_environment2.Environment,
 		max_episode_steps=1440,
 	)
 	env = gym.make("HVAC-v0")
