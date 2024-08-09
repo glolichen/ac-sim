@@ -47,7 +47,6 @@ class CustomFeedForwardPolicy(stable_baselines3.common.policies.ActorCriticPolic
 		"""Builds FeedForward32Policy; arguments passed to `ActorCriticPolicy`."""
 		super().__init__(*args, **kwargs, net_arch=[64, 128])
 
-
 def main():
 	args = parser.parse_args()
 	if args.output == None:

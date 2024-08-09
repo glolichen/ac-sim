@@ -14,7 +14,6 @@ from agents.generalized_dumb_agent import agent
 parser = argparse.ArgumentParser(prog="Simulator", add_help=False)
 parser.add_argument("-o", "--output")
 parser.add_argument("-t", "--time")
-parser.add_argument("-h", "--house")
 
 def main():
 	global num
@@ -25,11 +24,8 @@ def main():
 	if args.time == None:
 		args.time = 1440
 		print("warn: no time passed, default to 1440")
-	if args.house == None:
-		print("error: no house entered!")
-		sys.exit(1)
 
-	house = housebuilder.build_house(args.house)
+	house = housebuilder.build_house("5r_crazy.json")
 
 	num_rooms = len(house.get_rooms(0))
 

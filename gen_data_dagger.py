@@ -10,7 +10,7 @@ import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import gym_environment
+import gym_environment2
 import argparse
 import imitation
 import imitation.policies
@@ -33,7 +33,7 @@ def main():
 
 	num_rooms = 5
 
-	env = gym_environment.Environment()
+	env = gym_environment2.Environment()
 
 	fig = plt.figure()
 	spec = gridspec.GridSpec(nrows=1, ncols=2, width_ratios=[num_rooms, num_rooms + 1])

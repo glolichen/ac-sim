@@ -8,7 +8,7 @@ import sys
 import time
 import argparse
 from typing import List
-import gym_environment
+import gym_environment2
 import imitation
 import imitation.policies
 import imitation.policies.base
@@ -38,7 +38,7 @@ def main():
 		args.model = "models/dagger_out.zip"
 		print("warn: no time passed, default to models/dagger_out.zip")
 
-	env = gym_environment.Environment()
+	env = gym_environment2.Environment()
 
 	num_rooms = 5
 
