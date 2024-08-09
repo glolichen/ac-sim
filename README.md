@@ -22,6 +22,9 @@ These will generate a time series of the state of the house. The bottom box repr
 
 Hardcoded agents that we are trying (unsuccessfully so far) to beat. To change which agent to use when using Sim or Gen Data locate the `from agents/file import agent` and change `file` to the agent you want.
 
+## Deep Q Network
+The `main` branch is primarily for imitation/DAgger based methods. The simple Deep Q Network based system is located on the `deep-q-network` branch.
+
 ## Install
 
 Known to work on Linux with Python 3.8.*. Python 3.12 may not work because of stable baselines 3 issues. Install dependencies:
