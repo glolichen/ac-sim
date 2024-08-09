@@ -29,7 +29,7 @@ parser.add_argument("-s", "--save_interval", type=int, default=100, help="Interv
 args = parser.parse_args()
 
 # Initialize environment
-env = gym_environment.Environment()
+env = gym_environment.Environment("2r_simple.json")
 
 # Hyperparameters
 BATCH_SIZE = 188
@@ -167,12 +167,13 @@ for i_episode in range(args.episodes):
 
     for t in count():
         action = select_action(state)
-        next_state, reward, terminated, truncated, _ = env.step(action.item())
+        ac_status, dampers = env.get_action(action.item())
+        next_state, reward, terminated = env.step(ac_status, dampers)
 
         reward = torch.tensor([reward], device=const.DEVICE)
         episode_reward += reward.item()
 
-        if terminated or truncated:
+        if terminated:
             next_state = None
         else:
             next_state = next_state.clone().detach().to(const.DEVICE).unsqueeze(0)
@@ -187,7 +188,7 @@ for i_episode in range(args.episodes):
             target_net_state_dict[key] = policy_net_state_dict[key]*TAU + target_net_state_dict[key]*(1-TAU)
         target_net.load_state_dict(target_net_state_dict)
 
-        if terminated or truncated:
+        if terminated:
             episode_rewards.append(episode_reward)
             break
 
