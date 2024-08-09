@@ -34,7 +34,7 @@ pip install 'imitation[all]' 'stable-baselines3[extra]'
 
 ## Warnings before use
 
-Below is a list of known points of strange or buggy behavior. Please note that there are probably plenty more than I am not aware of or forgot.
+Below is a list of known points of strange, unexpected or buggy behavior in the program that you should be aware of. Please note that there are probably plenty more than I am not aware of or forgot.
  * `housebuilder` is not fully tested. You should check that the returned House object makes sense. The file parsing process may also throw `jayden li programming error`s which are safeguards against unexpected behavior and are largely caused by programming mistakes.
  * Before running `gen_data*` or `sim*` you should change a `num_rooms` variable. This tells the program how many rooms are in the house.
  * There is a bug in `imitation` that makes it impossible to load saved policies. See bug report filed [here](https://github.com/HumanCompatibleAI/imitation/issues/857). A very janky solution is detailed there.
