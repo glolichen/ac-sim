@@ -17,6 +17,10 @@ Example input:
 python train_rl.py -m better.pt_episode_1000.pt -o new.pt -s 50 1000
 ```
 
+## Optuna
+Currently being reimplemented
+
+
 ## Gen Data
 
 `gen_data2_rl` generates a list of box plots with data produced by the selected model after each run.
