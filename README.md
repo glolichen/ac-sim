@@ -18,7 +18,7 @@ python train_rl.py -m better.pt_episode_1000.pt -o new.pt -s 50 1000
 ```
 
 ## Optuna
-Optuna is a library that runs tests on your training agent to find the best hyperparameters. It runs a user-set number of trials on a user-set number of episodes. To change the number of trials to run, use `--trials [integer]`; to change the number of episodes each trial runs on, use `-episodes [integer]`. **Optuna uses the same simulation as train_rl, except it cycles the hyperparameters, so it may not work at a low number of episodes.**
+Optuna is a library that runs tests on your training agent to find the best hyperparameters. It runs a user-set number of trials on a user-set number of episodes. To change the number of trials to run, use `--trials [integer]`; to change the number of episodes each trial runs on, use `--episodes [integer]`. **Optuna uses the same simulation as train_rl, except it cycles the hyperparameters, so it may not work at a low number of episodes.**
 
 Example input:
 
