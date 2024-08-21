@@ -24,7 +24,6 @@ Example input:
 
 ```
 python optimize.py --trials 50 --episodes 1000
-
 ```
 
 ## Gen Data
